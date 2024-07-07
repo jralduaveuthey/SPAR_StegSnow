@@ -1,6 +1,7 @@
 import dotenv
 import os
 import time
+import socket
 import tqdm
 
 dotenv.load_dotenv()
@@ -42,6 +43,13 @@ def try_stop(name, tries=60, secs=10):
         time.sleep(secs)
 
 print_all_status()
-try_start('jaime2-a100')
-try_stop('jaime2-a100')
+
+hostname = socket.gethostname()
+if hostname == '5CD2373R4X':
+    try_start('jaime2-a100')
+elif hostname == 'jaime2-a100':
+    try_stop('jaime2-a100')
+
 print_all_status()
+
+
