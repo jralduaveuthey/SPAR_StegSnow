@@ -4,9 +4,11 @@ import time
 import socket
 import tqdm
 
+from FluidStack.client import FluidStack
+
 dotenv.load_dotenv()
 
-from FluidStack.client import FluidStack
+
 client = FluidStack(
     api_key = os.getenv('FLUIDSTACK_APIKEY')
 )
@@ -47,9 +49,8 @@ print_all_status()
 hostname = socket.gethostname()
 if hostname == '5CD2373R4X':
     try_start('jaime2-a100')
-elif hostname == 'jaime2-a100':
+elif hostname == 'fs-api-c2d4c704-389b-4750-9c0c-1a2b49da6e1a': #hostname for a100 machine
     try_stop('jaime2-a100')
-
 print_all_status()
 
 
