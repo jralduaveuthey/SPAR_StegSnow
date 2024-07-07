@@ -8,7 +8,6 @@ from FluidStack.client import FluidStack
 
 dotenv.load_dotenv()
 
-
 client = FluidStack(
     api_key = os.getenv('FLUIDSTACK_APIKEY')
 )
