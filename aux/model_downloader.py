@@ -1,3 +1,8 @@
+"""
+To download models from HF in my local machine. To speed up experiments.
+Atm not so useful since Lamma3 70B does not fit in my local machine a-100.
+"""
+
 import os
 import argparse
 from transformers import AutoTokenizer, AutoModel, AutoModelForCausalLM

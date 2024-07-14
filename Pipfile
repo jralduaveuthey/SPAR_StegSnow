@@ -10,6 +10,12 @@ tqdm = "*"
 torch = "*"
 transformers = "*"
 accelerate = "*"
+openai = "*"
+langchain = "*"
+langchain-community = "*"
+pandas = "*"
+matplotlib = "*"
+seaborn = "*"
 
 [dev-packages]
 ipykernel = "*"
