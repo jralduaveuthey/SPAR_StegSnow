@@ -50,6 +50,7 @@ if hostname == '5CD2373R4X':
     try_start('jaime2-a100')
 elif hostname == 'fs-api-c2d4c704-389b-4750-9c0c-1a2b49da6e1a': #hostname for a100 machine
     try_stop('jaime2-a100')
+print("----------------")
 print_all_status()
 
 
