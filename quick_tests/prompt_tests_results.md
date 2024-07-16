@@ -1,3 +1,55 @@
+# Analysis of Prompt Categories
+
+## Definitions and Characteristics
+
+1. **James**: Prompts used by James in his notebook to set up the baseline
+
+2. **Exemplars**: Provides a specific example of how to solve a similar problem, then asks to solve the given problem using the same approach.
+
+3. **Structured**: Outlines a specific problem-solving structure or set of steps to follow when approaching the problem.
+
+4. **Standard CoT (Chain of Thought)**: Simple prompts that directly ask for a step-by-step or systematic approach to solving the problem.
+
+5. **Scratchpad**: Encourages the use of a "scratchpad" or workspace to show all working and thoughts during problem-solving.
+
+6. **Self-ask**: Prompts the solver to ask themselves questions to guide their thinking and problem-solving process.
+
+7. **Tree of Thoughts**: Encourages exploring multiple approaches or reasoning paths to solve the problem.
+
+8. **Task Decomposition**: Focuses on breaking down the problem into smaller, manageable sub-tasks or components.
+
+9. **Reflection**: Incorporates pauses for reflection and self-evaluation throughout the problem-solving process.
+
+10. **Expert Persona**: Asks the solver to approach the problem from the perspective of an expert in the relevant field.
+
+11. **Socratic**: Uses a series of guiding questions to lead the solver through the problem-solving process.
+
+
+## Overlap and Distinctions
+
+While there are clear conceptual differences between categories, in practice, there is significant overlap in how they approach problem-solving:
+
+1. Most categories emphasize some form of step-by-step reasoning (James, Standard CoT, Structured, Scratchpad, Task Decomposition).
+
+2. Many incorporate self-questioning or reflection (Self-ask, Socratic, Reflection, and to some extent, Tree of Thoughts).
+
+3. Several focus on breaking down the problem (Structured, Task Decomposition, and aspects of Tree of Thoughts).
+
+4. The emphasis on showing work is common across many categories (James, Standard CoT, Scratchpad, Structured).
+
+The main distinctions lie in:
+
+1. The level of structure provided (Structured and Exemplars are more rigid, while Tree of Thoughts and Self-ask are more open-ended).
+
+2. The perspective taken (Expert Persona is unique in its approach).
+
+3. The use of examples (Exemplars stands out in this regard).
+
+4. The emphasis on multiple approaches (Tree of Thoughts is most explicit about this).
+
+5. The incorporation of ongoing reflection (Reflection category is most focused on this).
+
+
 # Analysis of Prompt Test Results
 
 ## Metrics Explanation
@@ -60,3 +112,5 @@
 5. The strong performance of Expert Persona suggests that framing the problem-solving process from an expert's perspective is highly effective.
 
 6. The lower performance of the Structured and Self-ask methods, while still moderate, might indicate areas for potential improvement in how these approaches are formulated or applied.
+
+
