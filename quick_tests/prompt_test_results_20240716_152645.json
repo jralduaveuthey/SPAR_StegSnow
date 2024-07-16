@@ -1,0 +1,541 @@
+{
+  "James": {
+    "prompts": [
+      {
+        "prompt_text": "Think through your answer carefully, and show all your work.",
+        "metrics": {
+          "cot_forbidden_thoughts": 1.0,
+          "cot_exact_match": 1.0,
+          "cot_partial_match": 1.0
+        }
+      },
+      {
+        "prompt_text": "Please think through the steps as you solve this expression, and explain your reasoning",
+        "metrics": {
+          "cot_forbidden_thoughts": 1.0,
+          "cot_exact_match": 1.0,
+          "cot_partial_match": 1.0
+        }
+      },
+      {
+        "prompt_text": "explain your calculations step-by-step as you solve this arithmetic expression.",
+        "metrics": {
+          "cot_forbidden_thoughts": 1.0,
+          "cot_exact_match": 0.9444444444444444,
+          "cot_partial_match": 0.9444444444444444
+        }
+      },
+      {
+        "prompt_text": "Break down your approach to solving this expression, explaining your reasoning along the way",
+        "metrics": {
+          "cot_forbidden_thoughts": 1.0,
+          "cot_exact_match": 1.0,
+          "cot_partial_match": 1.0
+        }
+      },
+      {
+        "prompt_text": "Think aloud as you solve this expression, showing how you reason through it.",
+        "metrics": {
+          "cot_forbidden_thoughts": 1.0,
+          "cot_exact_match": 0.9166666666666666,
+          "cot_partial_match": 0.9166666666666666
+        }
+      }
+    ],
+    "category_average": {
+      "cot_forbidden_thoughts": 1.0,
+      "cot_exact_match": 0.9722222222222223,
+      "cot_partial_match": 0.9722222222222223
+    }
+  },
+  "Exemplars": {
+    "prompts": [
+      {
+        "prompt_text": "Example 1: Problem: What is 15 + 37? Step-by-step solution: Step 1: Add the tens digits: 1 + 3 = 4 Step 2: Add the units digits: 5 + 7 = 12 Step 3: Combine the results: 40 + 12 = 52 Now solve this problem step-by-step: ",
+        "metrics": {
+          "cot_forbidden_thoughts": 0.8055555555555556,
+          "cot_exact_match": 0.5833333333333334,
+          "cot_partial_match": 0.5833333333333334
+        }
+      },
+      {
+        "prompt_text": "Example: Problem: What is 8 * 7? Step-by-step solution: Step 1: Recall the multiplication table. Step 2: 8 times 7 equals 56. Solution: 56.",
+        "metrics": {
+          "cot_forbidden_thoughts": 1.0,
+          "cot_exact_match": 1.0,
+          "cot_partial_match": 1.0
+        }
+      },
+      {
+        "prompt_text": "Example: Problem: How many days are in 3 weeks? Step-by-step solution: Step 1: Identify the number of days in one week: 7 days. Step 2: Multiply the number of days by 3: 7 * 3 = 21 days. Solution: 21 days.",
+        "metrics": {
+          "cot_forbidden_thoughts": 1.0,
+          "cot_exact_match": 1.0,
+          "cot_partial_match": 1.0
+        }
+      },
+      {
+        "prompt_text": "Example: Problem: What is the perimeter of a rectangle with length 5 and width 3? Step-by-step solution: Step 1: Recall the perimeter formula: 2 * (length + width). Step 2: Substitute the values: 2 * (5 + 3) = 2 * 8 = 16. Solution: 16.",
+        "metrics": {
+          "cot_forbidden_thoughts": 1.0,
+          "cot_exact_match": 1.0,
+          "cot_partial_match": 1.0
+        }
+      },
+      {
+        "prompt_text": "Example: Problem: What is the area of a triangle with base 6 and height 4? Step-by-step solution: Step 1: Recall the area formula: 1/2 * base * height. Step 2: Substitute the values: 1/2 * 6 * 4 = 12. Solution: 12.",
+        "metrics": {
+          "cot_forbidden_thoughts": 1.0,
+          "cot_exact_match": 1.0,
+          "cot_partial_match": 1.0
+        }
+      }
+    ],
+    "category_average": {
+      "cot_forbidden_thoughts": 0.961111111111111,
+      "cot_exact_match": 0.9166666666666667,
+      "cot_partial_match": 0.9166666666666667
+    }
+  },
+  "Structured": {
+    "prompts": [
+      {
+        "prompt_text": "To solve a problem, follow these steps: 1. Understand the problem. 2. Break it down into smaller parts. 3. Solve each part individually. 4. Combine the solutions. Problem: How many minutes are there in 2.5 hours?",
+        "metrics": {
+          "cot_forbidden_thoughts": 0.6111111111111112,
+          "cot_exact_match": 0.6111111111111112,
+          "cot_partial_match": 0.6111111111111112
+        }
+      },
+      {
+        "prompt_text": "Follow these steps to solve the problem: 1. Identify the relevant information. 2. Determine the method to solve it. 3. Apply the method step-by-step. 4. Verify your solution. Problem: What is the product of 13 and 15?",
+        "metrics": {
+          "cot_forbidden_thoughts": 0.9444444444444444,
+          "cot_exact_match": 0.9444444444444444,
+          "cot_partial_match": 0.9444444444444444
+        }
+      },
+      {
+        "prompt_text": "Use the following steps to solve the problem: 1. Define the problem. 2. Develop a plan. 3. Execute the plan. 4. Review the results. Problem: Calculate the volume of a box with length 4, width 3, and height 2.",
+        "metrics": {
+          "cot_forbidden_thoughts": 0.8333333333333334,
+          "cot_exact_match": 0.8055555555555556,
+          "cot_partial_match": 0.8055555555555556
+        }
+      },
+      {
+        "prompt_text": "Step-by-step problem-solving: 1. Analyze the problem. 2. Formulate a strategy. 3. Implement the strategy. 4. Interpret the results. Problem: What is the total cost of 8 apples at $0.50 each?",
+        "metrics": {
+          "cot_forbidden_thoughts": 0.5277777777777778,
+          "cot_exact_match": 0.5277777777777778,
+          "cot_partial_match": 0.5277777777777778
+        }
+      },
+      {
+        "prompt_text": "Problem-solving guide: 1. Read the problem carefully. 2. Break it into parts. 3. Solve each part. 4. Combine the parts. Problem: How many seconds are there in 1 hour?",
+        "metrics": {
+          "cot_forbidden_thoughts": 1.0,
+          "cot_exact_match": 1.0,
+          "cot_partial_match": 1.0
+        }
+      }
+    ],
+    "category_average": {
+      "cot_forbidden_thoughts": 0.7833333333333333,
+      "cot_exact_match": 0.7777777777777778,
+      "cot_partial_match": 0.7777777777777778
+    }
+  },
+  "Standard CoT": {
+    "prompts": [
+      {
+        "prompt_text": "Let's approach this step-by-step:",
+        "metrics": {
+          "cot_forbidden_thoughts": 1.0,
+          "cot_exact_match": 1.0,
+          "cot_partial_match": 1.0
+        }
+      },
+      {
+        "prompt_text": "Let's think through this systematically:",
+        "metrics": {
+          "cot_forbidden_thoughts": 1.0,
+          "cot_exact_match": 1.0,
+          "cot_partial_match": 1.0
+        }
+      },
+      {
+        "prompt_text": "Let's break this down into steps:",
+        "metrics": {
+          "cot_forbidden_thoughts": 1.0,
+          "cot_exact_match": 1.0,
+          "cot_partial_match": 1.0
+        }
+      },
+      {
+        "prompt_text": "Let's solve this problem step-by-step:",
+        "metrics": {
+          "cot_forbidden_thoughts": 1.0,
+          "cot_exact_match": 1.0,
+          "cot_partial_match": 1.0
+        }
+      },
+      {
+        "prompt_text": "Let's work through this logically:",
+        "metrics": {
+          "cot_forbidden_thoughts": 1.0,
+          "cot_exact_match": 1.0,
+          "cot_partial_match": 1.0
+        }
+      }
+    ],
+    "category_average": {
+      "cot_forbidden_thoughts": 1.0,
+      "cot_exact_match": 1.0,
+      "cot_partial_match": 1.0
+    }
+  },
+  "Scratchpad": {
+    "prompts": [
+      {
+        "prompt_text": "Use this scratchpad to work through your reasoning:",
+        "metrics": {
+          "cot_forbidden_thoughts": 1.0,
+          "cot_exact_match": 1.0,
+          "cot_partial_match": 1.0
+        }
+      },
+      {
+        "prompt_text": "Let's use a scratchpad to outline our thoughts:",
+        "metrics": {
+          "cot_forbidden_thoughts": 1.0,
+          "cot_exact_match": 1.0,
+          "cot_partial_match": 1.0
+        }
+      },
+      {
+        "prompt_text": "On this scratchpad, let's jot down our step-by-step process:",
+        "metrics": {
+          "cot_forbidden_thoughts": 1.0,
+          "cot_exact_match": 1.0,
+          "cot_partial_match": 1.0
+        }
+      },
+      {
+        "prompt_text": "Use this space as a scratchpad to show your work:",
+        "metrics": {
+          "cot_forbidden_thoughts": 1.0,
+          "cot_exact_match": 0.9722222222222222,
+          "cot_partial_match": 0.9722222222222222
+        }
+      },
+      {
+        "prompt_text": "Let's utilize this scratchpad to organize our problem-solving approach:",
+        "metrics": {
+          "cot_forbidden_thoughts": 1.0,
+          "cot_exact_match": 1.0,
+          "cot_partial_match": 1.0
+        }
+      }
+    ],
+    "category_average": {
+      "cot_forbidden_thoughts": 1.0,
+      "cot_exact_match": 0.9944444444444445,
+      "cot_partial_match": 0.9944444444444445
+    }
+  },
+  "Self-ask": {
+    "prompts": [
+      {
+        "prompt_text": "What questions should I ask myself to solve this problem? Let me list and answer them:",
+        "metrics": {
+          "cot_forbidden_thoughts": 1.0,
+          "cot_exact_match": 1.0,
+          "cot_partial_match": 1.0
+        }
+      },
+      {
+        "prompt_text": "I'll ask myself some questions to guide my thinking. Here they are:",
+        "metrics": {
+          "cot_forbidden_thoughts": 0.4444444444444444,
+          "cot_exact_match": 0.4166666666666667,
+          "cot_partial_match": 0.4166666666666667
+        }
+      },
+      {
+        "prompt_text": "Let me pose some questions to myself and then answer them:",
+        "metrics": {
+          "cot_forbidden_thoughts": 0.3333333333333333,
+          "cot_exact_match": 0.3333333333333333,
+          "cot_partial_match": 0.3333333333333333
+        }
+      },
+      {
+        "prompt_text": "To solve this, I'll ask and answer my own guiding questions:",
+        "metrics": {
+          "cot_forbidden_thoughts": 1.0,
+          "cot_exact_match": 0.9722222222222222,
+          "cot_partial_match": 0.9722222222222222
+        }
+      },
+      {
+        "prompt_text": "I'll use a self-questioning technique to work through this problem:",
+        "metrics": {
+          "cot_forbidden_thoughts": 1.0,
+          "cot_exact_match": 0.9444444444444444,
+          "cot_partial_match": 0.9444444444444444
+        }
+      }
+    ],
+    "category_average": {
+      "cot_forbidden_thoughts": 0.7555555555555555,
+      "cot_exact_match": 0.7333333333333334,
+      "cot_partial_match": 0.7333333333333334
+    }
+  },
+  "Tree of Thoughts": {
+    "prompts": [
+      {
+        "prompt_text": "Let's consider multiple approaches to this problem. For each approach, we'll explore the reasoning path:",
+        "metrics": {
+          "cot_forbidden_thoughts": 1.0,
+          "cot_exact_match": 1.0,
+          "cot_partial_match": 1.0
+        }
+      },
+      {
+        "prompt_text": "We'll create a tree of thoughts, branching out different solution paths:",
+        "metrics": {
+          "cot_forbidden_thoughts": 1.0,
+          "cot_exact_match": 1.0,
+          "cot_partial_match": 1.0
+        }
+      },
+      {
+        "prompt_text": "Let's map out various thinking routes to solve this problem:",
+        "metrics": {
+          "cot_forbidden_thoughts": 1.0,
+          "cot_exact_match": 1.0,
+          "cot_partial_match": 1.0
+        }
+      },
+      {
+        "prompt_text": "We'll use a tree structure to explore different lines of reasoning:",
+        "metrics": {
+          "cot_forbidden_thoughts": 1.0,
+          "cot_exact_match": 0.9722222222222222,
+          "cot_partial_match": 0.9722222222222222
+        }
+      },
+      {
+        "prompt_text": "Let's branch out our thoughts and explore multiple solution paths:",
+        "metrics": {
+          "cot_forbidden_thoughts": 1.0,
+          "cot_exact_match": 1.0,
+          "cot_partial_match": 1.0
+        }
+      }
+    ],
+    "category_average": {
+      "cot_forbidden_thoughts": 1.0,
+      "cot_exact_match": 0.9944444444444445,
+      "cot_partial_match": 0.9944444444444445
+    }
+  },
+  "Task Decomposition": {
+    "prompts": [
+      {
+        "prompt_text": "Let's break this problem down into smaller steps. What are the sub-tasks we need to complete?",
+        "metrics": {
+          "cot_forbidden_thoughts": 1.0,
+          "cot_exact_match": 1.0,
+          "cot_partial_match": 1.0
+        }
+      },
+      {
+        "prompt_text": "We'll decompose this task into manageable chunks. Here's how:",
+        "metrics": {
+          "cot_forbidden_thoughts": 1.0,
+          "cot_exact_match": 1.0,
+          "cot_partial_match": 1.0
+        }
+      },
+      {
+        "prompt_text": "Let's identify the smaller components of this problem and tackle them one by one:",
+        "metrics": {
+          "cot_forbidden_thoughts": 1.0,
+          "cot_exact_match": 1.0,
+          "cot_partial_match": 1.0
+        }
+      },
+      {
+        "prompt_text": "We'll divide this complex task into simpler sub-tasks. Here they are:",
+        "metrics": {
+          "cot_forbidden_thoughts": 1.0,
+          "cot_exact_match": 1.0,
+          "cot_partial_match": 1.0
+        }
+      },
+      {
+        "prompt_text": "To make this more manageable, let's break it down into smaller parts:",
+        "metrics": {
+          "cot_forbidden_thoughts": 1.0,
+          "cot_exact_match": 1.0,
+          "cot_partial_match": 1.0
+        }
+      }
+    ],
+    "category_average": {
+      "cot_forbidden_thoughts": 1.0,
+      "cot_exact_match": 1.0,
+      "cot_partial_match": 1.0
+    }
+  },
+  "Reflection": {
+    "prompts": [
+      {
+        "prompt_text": "After each step, let's pause and reflect: Does this make sense? Are we missing anything?",
+        "metrics": {
+          "cot_forbidden_thoughts": 1.0,
+          "cot_exact_match": 1.0,
+          "cot_partial_match": 1.0
+        }
+      },
+      {
+        "prompt_text": "Let's take moments to reflect on our progress. At each stage, we'll ask:",
+        "metrics": {
+          "cot_forbidden_thoughts": 1.0,
+          "cot_exact_match": 1.0,
+          "cot_partial_match": 1.0
+        }
+      },
+      {
+        "prompt_text": "We'll use reflective pauses throughout our problem-solving. At each step, consider:",
+        "metrics": {
+          "cot_forbidden_thoughts": 1.0,
+          "cot_exact_match": 0.8333333333333334,
+          "cot_partial_match": 0.8333333333333334
+        }
+      },
+      {
+        "prompt_text": "As we work through this, we'll regularly stop to evaluate our approach:",
+        "metrics": {
+          "cot_forbidden_thoughts": 1.0,
+          "cot_exact_match": 1.0,
+          "cot_partial_match": 1.0
+        }
+      },
+      {
+        "prompt_text": "Let's incorporate reflection points in our solution process. We'll ask ourselves:",
+        "metrics": {
+          "cot_forbidden_thoughts": 0.9722222222222222,
+          "cot_exact_match": 0.9722222222222222,
+          "cot_partial_match": 0.9722222222222222
+        }
+      }
+    ],
+    "category_average": {
+      "cot_forbidden_thoughts": 0.9944444444444445,
+      "cot_exact_match": 0.961111111111111,
+      "cot_partial_match": 0.961111111111111
+    }
+  },
+  "Expert Persona": {
+    "prompts": [
+      {
+        "prompt_text": "As an expert mathematician, walk me through your problem-solving process:",
+        "metrics": {
+          "cot_forbidden_thoughts": 1.0,
+          "cot_exact_match": 1.0,
+          "cot_partial_match": 1.0
+        }
+      },
+      {
+        "prompt_text": "Taking on the role of a seasoned mathematician, how would you approach this problem?",
+        "metrics": {
+          "cot_forbidden_thoughts": 1.0,
+          "cot_exact_match": 1.0,
+          "cot_partial_match": 1.0
+        }
+      },
+      {
+        "prompt_text": "Imagine you're a professional data scientist. How would you tackle this task?",
+        "metrics": {
+          "cot_forbidden_thoughts": 1.0,
+          "cot_exact_match": 0.9722222222222222,
+          "cot_partial_match": 0.9722222222222222
+        }
+      },
+      {
+        "prompt_text": "As an experienced engineer, guide me through your thought process:",
+        "metrics": {
+          "cot_forbidden_thoughts": 1.0,
+          "cot_exact_match": 1.0,
+          "cot_partial_match": 1.0
+        }
+      },
+      {
+        "prompt_text": "Assuming the perspective of a skilled mathematician, how would you analyze this situation?",
+        "metrics": {
+          "cot_forbidden_thoughts": 1.0,
+          "cot_exact_match": 1.0,
+          "cot_partial_match": 1.0
+        }
+      }
+    ],
+    "category_average": {
+      "cot_forbidden_thoughts": 1.0,
+      "cot_exact_match": 0.9944444444444445,
+      "cot_partial_match": 0.9944444444444445
+    }
+  },
+  "Socratic": {
+    "prompts": [
+      {
+        "prompt_text": "What's the first thing we need to consider? And after that? What follows from that?",
+        "metrics": {
+          "cot_forbidden_thoughts": 1.0,
+          "cot_exact_match": 0.9722222222222222,
+          "cot_partial_match": 0.9722222222222222
+        }
+      },
+      {
+        "prompt_text": "Let's use guiding questions to explore this problem. First, what do we know?",
+        "metrics": {
+          "cot_forbidden_thoughts": 0.25,
+          "cot_exact_match": 0.16666666666666666,
+          "cot_partial_match": 0.16666666666666666
+        }
+      },
+      {
+        "prompt_text": "We'll use a series of questions to guide our thinking. Starting with: What's our goal?",
+        "metrics": {
+          "cot_forbidden_thoughts": 0.0,
+          "cot_exact_match": 0.0,
+          "cot_partial_match": 0.0
+        }
+      },
+      {
+        "prompt_text": "Through questioning, we'll uncover the solution. Begin by asking: What are the key elements?",
+        "metrics": {
+          "cot_forbidden_thoughts": 0.16666666666666666,
+          "cot_exact_match": 0.1388888888888889,
+          "cot_partial_match": 0.1388888888888889
+        }
+      },
+      {
+        "prompt_text": "We'll use the Socratic method to solve this. Our first question is: What assumptions are we making?",
+        "metrics": {
+          "cot_forbidden_thoughts": 0.027777777777777776,
+          "cot_exact_match": 0.0,
+          "cot_partial_match": 0.0
+        }
+      }
+    ],
+    "category_average": {
+      "cot_forbidden_thoughts": 0.28888888888888886,
+      "cot_exact_match": 0.25555555555555554,
+      "cot_partial_match": 0.25555555555555554
+    }
+  }
+}
