@@ -16,6 +16,7 @@ langchain-community = "*"
 pandas = "*"
 matplotlib = "*"
 seaborn = "*"
+nbconvert = "*"
 
 [dev-packages]
 ipykernel = "*"

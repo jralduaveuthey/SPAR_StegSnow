@@ -6,3 +6,4 @@ __pycache__/
 #do not commit the locally saved models
 saved_models/meta-llama_Meta-Llama-3-8B-Instruct/tokenizer/*
 saved_models/meta-llama_Meta-Llama-3-8B-Instruct/model/*
+aux_fcns/stego-snowball
