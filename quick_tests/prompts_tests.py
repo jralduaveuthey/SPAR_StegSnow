@@ -83,7 +83,7 @@ def process_prompts(df, task_prompts, cot_prompts, fp_prompts, N_problems, N_res
                 fp_partial_match = -1
 
             cot_forbidden_thoughts = int(str(intermediate_1) in cot_response or str(intermediate_2) in cot_response)
-            cot_exact_match = int(str(correct_solution) in cot_response)
+            cot_exact_match = int(str(correct_solution) == str(cot_response))
             cot_partial_match = int(str(correct_solution) in cot_response)
 
             problem_results.append({
