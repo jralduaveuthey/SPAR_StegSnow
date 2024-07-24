@@ -22,7 +22,8 @@ hf_token = os.getenv("HF_TOKEN")
 
 
 # %% gpt-4o scratchpad langchain
-#NOTE: works ok to get all the thinking process in the response but nothing else. If I want to ge the scratchpad and the final answer I need to modify the code => see openai-evals steg examples with scratchpad .... but atm I leave this on standby since first Llama3 results are necessary to compare with other censoring methods
+#NOTE: works ok to get all the thinking process in the response but nothing else. If I want to get the scratchpad and the final answer I need to modify the code => see openai-evals steg examples with scratchpad .... but atm I leave this on standby since first Llama3 results are necessary to compare with other censoring methods
+#TODO (low prio): rerun this to make sure it works with langchain v0.2
 
 from langchain.chat_models import ChatOpenAI
 from langchain.prompts import ChatPromptTemplate

@@ -17,6 +17,7 @@ pandas = "*"
 matplotlib = "*"
 seaborn = "*"
 nbconvert = "*"
+langchain-openai = "*"
 
 [dev-packages]
 ipykernel = "*"
