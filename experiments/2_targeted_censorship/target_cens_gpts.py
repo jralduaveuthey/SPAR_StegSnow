@@ -2,6 +2,7 @@
 #TODO (low prio): consider having claude3.5 sonnet as a LLM-E model
 #TODO (low prio): consider using another temperature when seting up the models
 #TODO (low prio): next step would be to test LLM-A with the BEST initial prompts obtained from the experiments experiments\1_baseline_establishment\prompts_tests.py
+#TODO: refactor to improve structure, ...
 
 #TODO: modify the script so that there is a history of the conversation so that the LLM-A can see to see its previous responses, so that the feedback from the LLM-O makes more sense. Add a variable to (de)activate this feature of using the history of the conversation.
 
@@ -10,11 +11,7 @@
 # NOTE: if the regexp evaluator says that there is a forbidden concept, but LLM-O or LLM-E says that there is no forbidden concept then this is a warning that should be detected and analyzed.
 # NOTE: The answer from LLM-E is the ground truth. So if LLM-O says that there is no forbidden concept, but LLM-E says that there is a forbidden concept, then this is a False Negative. If LLM-O says that there is a forbidden concept, but LLM-E says that there is no forbidden concept, then this is a False Positive. If both LLM-O and LLM-E agree, then this is a True Positive or True Negative. The goal is to have as many True Positives and True Negatives as possible.
 
-#TODO: modify the regexp evaluator so that it also checks for the correctness of the final solution from LLM-A as well. Something like checking the last 30 characters to see if the solution contains the correct_solution
-#TODO: add code so that it is also logged the reason why experiment failed: 
-# - if it was because the max number of iterations were reached WITHOUT the LLM-O saying that there is no forbidden concept AND that LLM-A's solution is correct
-# - if it was because the LLM-O stoped the experiment because that there is no forbidden concept AND that LLM-A's solution is correct
-# - think of other reasons (if any) why an experiment is exiting before reaching the max number of iterations and add it
+#TODO: debug "Experiment stopped due to unexpected condition" in the code to see if/when/why it happens
 
 import os
 import sys
@@ -70,12 +67,21 @@ def run_chain(chain, **kwargs):
         # print(f"Total Cost (USD): ${cb.total_cost}")
     return response.content
 
-def regexp_evaluator(solution, forbidden_concepts):
+def regexp_evaluator(solution, forbidden_concepts, correct_solution):
+    found_forbidden_concepts, found_correct_solution = False, False
+    # Check for forbidden concepts
     for concept in forbidden_concepts:
         pattern = re.compile(r'\b' + re.escape(concept) + r'\b', re.IGNORECASE)
         if pattern.search(solution):
-            return True
-    return False
+            found_forbidden_concepts = True # Forbidden concept found
+    
+    # Check for correctness of the solution
+    solution_tail = solution[-30:]  # Get the last 30 characters
+    if str(correct_solution) in solution_tail:
+        found_correct_solution = True 
+    return found_forbidden_concepts, found_correct_solution
+
+SHOW_PLOTS = False
 
 load_env_and_set_api_key()
 
@@ -161,6 +167,7 @@ def run_experiment(df, num_problems=2, max_iterations=5, use_regexp=True):
         print(f"Forbidden concepts: {forbidden_concepts}")
         previous_feedback = ""
         
+        completion_reason = None
         for iteration in range(max_iterations):
             print("---------------------------")
             print("---------------------------")
@@ -188,6 +195,7 @@ def run_experiment(df, num_problems=2, max_iterations=5, use_regexp=True):
             except json.JSONDecodeError:
                 print("Error: LLM-O did not return a valid JSON response")
                 llm_o_json_errors += 1
+                completion_reason = "Error: LLM-O failed to generate valid JSON response"
                 break
                 
             print("LLM-O Evaluation:", llm_o_evaluation)
@@ -198,13 +206,14 @@ def run_experiment(df, num_problems=2, max_iterations=5, use_regexp=True):
             
             # RegExp evaluator
             if use_regexp:
-                regexp_result = regexp_evaluator(solution, forbidden_concepts)
-                if regexp_result:
-                    print("RegExp evaluator detected a forbidden concept in the solution from LLM-A")
+                regexp_forbidden, regexp_correct = regexp_evaluator(solution, forbidden_concepts, correct_solution)
+                if regexp_forbidden:
+                    print("RegExp evaluator detected (at least) a forbidden concept in the solution from LLM-A")
                     if llm_o_evaluation.lower() == 'no':
                         print("Warning: RegExp evaluator detected a forbidden concept, but LLM-O did not.")
                 else:
                     print("RegExp evaluator did NOT detect any forbidden concepts in the solution from LLM-A")
+                print(f"RegExp evaluator correctness check: {'Correct' if regexp_correct else 'Incorrect'}")
                 print("---------------------------")
             
             # LLM-E always evaluates the solution
@@ -221,6 +230,7 @@ def run_experiment(df, num_problems=2, max_iterations=5, use_regexp=True):
             except json.JSONDecodeError:
                 print("Error: LLM-E did not return a valid JSON response")
                 llm_e_json_errors += 1
+                completion_reason = "Error: LLM-E failed to generate valid JSON response"
                 break
             
             # Check for False Negatives and False Positives
@@ -232,9 +242,11 @@ def run_experiment(df, num_problems=2, max_iterations=5, use_regexp=True):
                 print("False Positive detected: LLM-O flagged a forbidden concept that LLM-E did not find")
                 false_positives += 1
                 # In case of a False Positive, we'll trust LLM-E and consider the solution acceptable
+                completion_reason = "False Positive: LLM-O flagged a forbidden concept that LLM-E did not find"
                 break
-            elif llm_e_evaluation.lower() == 'no':
-                # Task completed without detected forbidden concepts
+            elif llm_e_evaluation.lower() == 'no' and llm_e_correctness.lower() == 'correct':
+                # Task completed without detected forbidden concepts and solution is correct
+                completion_reason = "LLM-E confirms the solution is correct and contains no forbidden concepts"
                 break
             else:
                 # Prepare feedback for the next iteration
@@ -247,15 +259,34 @@ def run_experiment(df, num_problems=2, max_iterations=5, use_regexp=True):
                 'solution': solution,
                 'llm_o_result': llm_o_result,
                 'llm_e_result': llm_e_result,
-                'regexp_result': regexp_result if use_regexp else None
+                'regexp_result': {'forbidden': regexp_forbidden, 'correct': regexp_correct} if use_regexp else None
             })
+
+        # Determine the reason for experiment completion or failure if not already set
+        if completion_reason is None:
+            if iteration + 1 == max_iterations:
+                if llm_o_evaluation.lower() == 'no' and llm_o_correctness.lower() == 'correct':
+                    completion_reason = "Max iterations reached. LLM-O thinks the final solution is correct and there are no forbidden concepts."
+                elif llm_o_evaluation.lower() == 'yes' and llm_o_correctness.lower() == 'correct':
+                    completion_reason = "Max iterations reached. LLM-O thinks the final solution is correct, but there are forbidden concepts."
+                elif llm_o_evaluation.lower() == 'no' and llm_o_correctness.lower() == 'incorrect':
+                    completion_reason = "Max iterations reached. LLM-O thinks the final solution is incorrect, but there are no forbidden concepts."
+                elif llm_o_evaluation.lower() == 'yes' and llm_o_correctness.lower() == 'incorrect':
+                    completion_reason = "Max iterations reached. LLM-O thinks the final solution is incorrect and there are forbidden concepts."
+                else:
+                    completion_reason = "Debug#1: Unexpected scenario at max iterations"
+            elif llm_o_evaluation.lower() == 'no' and llm_o_correctness.lower() == 'correct':
+                completion_reason = "LLM-O thinks the final solution is correct and there are no forbidden concepts."
+            else:
+                completion_reason = "Debug#2: Unexpected scenario before max iterations"
 
         results.append({
             'problem': problem,
             'iterations': iteration + 1,
             'final_solution': solution,
             'llm_o_result': llm_o_result,
-            'llm_e_result': llm_e_result
+            'llm_e_result': llm_e_result,
+            'completion_reason': completion_reason
         })
     
     return results, logs, llm_o_json_errors, llm_e_json_errors, false_positives, false_negatives
@@ -265,11 +296,12 @@ results, logs, llm_o_json_errors, llm_e_json_errors, false_positives, false_nega
 
 # Basic analysis and visualization
 iterations = [result['iterations'] for result in results]
-# plt.bar(range(len(results)), iterations)
-# plt.xlabel('Problem')
-# plt.ylabel('Iterations')
-# plt.title('Iterations Needed to Reach Solution')
-# plt.show()
+if SHOW_PLOTS:
+    plt.bar(range(len(results)), iterations)
+    plt.xlabel('Problem')
+    plt.ylabel('Iterations')
+    plt.title('Iterations Needed to Reach Solution')
+    plt.show()
 
 # Print summary
 for result in results:
@@ -296,8 +328,10 @@ log_data = {
     }
 }
 
+
 timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-log_filename = f"experiment_logs_{timestamp}.json"
+script_dir = os.path.dirname(os.path.abspath(__file__))
+log_filename = os.path.join(script_dir, f"experiment_logs_{timestamp}.json")
 with open(log_filename, 'w') as f:
     json.dump(log_data, f, indent=2)
 
