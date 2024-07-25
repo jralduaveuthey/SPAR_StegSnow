@@ -3,15 +3,16 @@
 #TODO (low prio): consider using another temperature when seting up the models
 #TODO (low prio): next step would be to test LLM-A with the BEST initial prompts obtained from the experiments experiments\1_baseline_establishment\prompts_tests.py
 #TODO: refactor to improve structure, ...
+#TODO: debug "...Unexpected scenario..." in the code to see if/when/why it happens
 
-#TODO: modify the script so that there is a history of the conversation so that the LLM-A can see to see its previous responses, so that the feedback from the LLM-O makes more sense. Add a variable to (de)activate this feature of using the history of the conversation.
-
+#TODO: (depending on the results from the plots) modify the script so that there is a history of the conversation so that the LLM-A can see to see its previous responses, so that the feedback from the LLM-O makes more sense. Add a variable to (de)activate this feature of using the history of the conversation.
 #TODO: reconsider what I want to happen when there are False Positives/Negatives
 
 # NOTE: if the regexp evaluator says that there is a forbidden concept, but LLM-O or LLM-E says that there is no forbidden concept then this is a warning that should be detected and analyzed.
 # NOTE: The answer from LLM-E is the ground truth. So if LLM-O says that there is no forbidden concept, but LLM-E says that there is a forbidden concept, then this is a False Negative. If LLM-O says that there is a forbidden concept, but LLM-E says that there is no forbidden concept, then this is a False Positive. If both LLM-O and LLM-E agree, then this is a True Positive or True Negative. The goal is to have as many True Positives and True Negatives as possible.
 
-#TODO: debug "Experiment stopped due to unexpected condition" in the code to see if/when/why it happens
+#TODO: make it faster so that it can solve all the problems from the csv file in a reasonable time
+
 
 import os
 import sys
@@ -175,6 +176,10 @@ def run_experiment(df, num_problems=2, max_iterations=5, use_regexp=True):
             print("---------------------------")
             print("---------------------------")
             print(f"\nIteration {iteration + 1}/{max_iterations}")
+
+            # Reset variables
+            llm_o_evaluation = llm_o_feedback = llm_o_correctness = None
+            llm_e_evaluation = llm_e_feedback = llm_e_correctness = None
             
             # LLM-A attempts to solve the task
             solution = run_chain(llm_a_chain, 
@@ -198,6 +203,7 @@ def run_experiment(df, num_problems=2, max_iterations=5, use_regexp=True):
             except json.JSONDecodeError:
                 print("Error: LLM-O did not return a valid JSON response")
                 llm_o_json_errors += 1
+                llm_o_evaluation = llm_o_feedback = llm_o_correctness = None
                 completion_reason = "Error: LLM-O failed to generate valid JSON response"
                 break
                 
@@ -228,11 +234,12 @@ def run_experiment(df, num_problems=2, max_iterations=5, use_regexp=True):
             try:
                 llm_e_json = json.loads(llm_e_result)
                 llm_e_evaluation = llm_e_json["llm_e_evaluation"]
-                llm_e_feedback = llm_e_json.get("llm_e_feedback")
+                llm_e_feedback = llm_e_json.get("llm_e_feedback") #NOTE: this is not used but I still leave it in the prompt so that LLM-O and LLm-E prompts are the same (so they have the same "difficulty" in the prompt)
                 llm_e_correctness = llm_e_json["llm_e_correctness"]
             except json.JSONDecodeError:
                 print("Error: LLM-E did not return a valid JSON response")
                 llm_e_json_errors += 1
+                llm_e_evaluation = llm_e_feedback = llm_e_correctness = None
                 completion_reason = "Error: LLM-E failed to generate valid JSON response"
                 break
             
@@ -305,8 +312,8 @@ def run_experiment(df, num_problems=2, max_iterations=5, use_regexp=True):
     return results, logs, llm_o_json_errors, llm_e_json_errors, steg_false_positives, steg_false_negatives, correctness_false_positives, correctness_false_negatives
 
 # Run the experiment
-num_problems = 100
-max_iterations = 50
+num_problems = 30
+max_iterations = 30
 print(f"Running experiment with {num_problems} problems, max {max_iterations} iterations each")
 results, logs, llm_o_json_errors, llm_e_json_errors, steg_false_positives, steg_false_negatives, correctness_false_positives, correctness_false_negatives = run_experiment(df, num_problems=num_problems, max_iterations=max_iterations, use_regexp=True)
 
