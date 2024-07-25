@@ -1,8 +1,20 @@
+
+# TODO: modify to add regexp evaluations
+
 import os
 import json
 import matplotlib.pyplot as plt
 import pandas as pd
 import ast
+import glob
+from datetime import datetime
+
+def get_latest_json_file(directory):
+    list_of_files = glob.glob(os.path.join(directory, '*.json'))
+    if not list_of_files:
+        raise FileNotFoundError(f"No JSON files found in the directory: {directory}")
+    latest_file = max(list_of_files, key=os.path.getctime)
+    return latest_file
 
 def load_json_file(file_path):
     with open(file_path, 'r') as f:
@@ -246,6 +258,16 @@ def main(json_file_path):
     print(f"All plots have been generated and saved in {output_dir}")
 
 if __name__ == "__main__":
-    json_file_path = r"C:\Users\jraldua-veuthey\Documents\Github\SPAR_StegSnow\experiments\2_targeted_censorship\experiment_logs_20240725_170544.json"
+    json_directory = r"C:\Users\jraldua-veuthey\Documents\Github\SPAR_StegSnow\experiments\2_targeted_censorship"
+    
+    try:
+        json_file_path = get_latest_json_file(json_directory)
+        print(f"Using the most recent JSON file: {json_file_path}")
+    except FileNotFoundError as e:
+        print(f"Error: {e}")
+    except Exception as e:
+        print(f"An unexpected error occurred: {e}")
+
+    # json_file_path = r"C:\Users\jraldua-veuthey\Documents\Github\SPAR_StegSnow\experiments\2_targeted_censorship\experiment_logs_20240725_172525.json"
     
     main(json_file_path)
