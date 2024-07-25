@@ -33,7 +33,7 @@ def plot_iteration_distribution(results, output_dir):
     plt.savefig(os.path.join(output_dir, 'iteration_distribution.png'))
     plt.close()
 
-def plot_success_rate(results, output_dir): #TODO: consider modifying this plot
+def plot_success_rate(results, output_dir, plot_type='scatter'):
     # Filter out cases with JSON errors
     solved_problems = results[~results['completion_reason'].str.contains('JSON', case=False, na=False)]
     
@@ -43,12 +43,22 @@ def plot_success_rate(results, output_dir): #TODO: consider modifying this plot
     success_rates = [(solved_problems['iterations'] <= i).sum() / total_problems for i in range(1, max_iterations + 1)]
     
     plt.figure(figsize=(10, 6))
-    plt.plot(range(1, max_iterations + 1), success_rates)
+    
+    if plot_type == 'scatter':
+        plt.scatter(range(1, max_iterations + 1), success_rates, color='blue')
+        plt.plot(range(1, max_iterations + 1), success_rates, color='lightblue', alpha=0.5)  # Light line for visual aid
+    elif plot_type == 'bar':
+        plt.bar(range(1, max_iterations + 1), success_rates, color='blue', alpha=0.7)
+    else:
+        raise ValueError("plot_type must be either 'scatter' or 'bar'")
+    
     plt.title('Cumulative Success Rate Over Iterations\n(Excluding JSON Errors)')
     plt.xlabel('Number of Iterations')
     plt.ylabel('Fraction of Problems Solved')
     plt.ylim(0, 1)
-    plt.savefig(os.path.join(output_dir, 'success_rate.png'))
+    plt.xlim(0, max_iterations + 1)
+    plt.tight_layout()
+    plt.savefig(os.path.join(output_dir, f'success_rate_{plot_type}.png'))
     plt.close()
 
 def plot_llm_agreement_forbidden(results, output_dir):
@@ -128,7 +138,10 @@ def plot_false_rates(stats, output_dir):
 def plot_completion_reasons(results, output_dir):
     reasons = results['completion_reason'].value_counts()
     plt.figure(figsize=(12, 8))
-    reasons.plot(kind='pie', autopct='%1.1f%%')
+    
+    # Create a pie chart with percentage and absolute number labels
+    plt.pie(reasons, labels=reasons.index, autopct=lambda pct: f'{pct:.1f}%\n({int(pct/100.*sum(reasons))})')
+    
     plt.title('Distribution of Completion Reasons')
     plt.ylabel('')
     plt.tight_layout()
@@ -139,14 +152,14 @@ def plot_json_errors(stats, results, output_dir):
     total_problems = len(results)
     llm_o_errors = stats['llm_o_json_errors'].iloc[0]
     llm_e_errors = stats['llm_e_json_errors'].iloc[0]
-    successful_cases = total_problems - (llm_o_errors + llm_e_errors)
+    json_error_free_cases = total_problems - (llm_o_errors + llm_e_errors)
 
-    error_types = ['LLM-O JSON Errors', 'LLM-E JSON Errors', 'Successful Cases']
-    error_counts = [llm_o_errors, llm_e_errors, successful_cases]
+    error_types = ['LLM-O JSON Errors', 'LLM-E JSON Errors', 'JSON-Error-Free Cases']
+    error_counts = [llm_o_errors, llm_e_errors, json_error_free_cases]
 
     plt.figure(figsize=(10, 6))
     bars = plt.bar(error_types, error_counts)
-    plt.title('JSON Error Counts and Successful Cases')
+    plt.title('JSON Error Counts ')
     plt.ylabel('Count')
     plt.tight_layout()
 
@@ -223,8 +236,8 @@ def main(json_file_path):
     output_dir = create_output_directory(json_file_path)
 
     plot_iteration_distribution(results, output_dir)
-    plot_success_rate(results, output_dir)
-    plot_llm_agreement_forbidden(results, output_dir)
+    plot_success_rate(results, output_dir, plot_type='scatter')  # For scatter plot
+    # plot_success_rate(results, output_dir, plot_type='bar')  # For bar plot    plot_llm_agreement_forbidden(results, output_dir)
     plot_llm_agreement_correctness(results, output_dir)
     plot_false_rates_iterations(results, output_dir)
     plot_completion_reasons(results, output_dir)
@@ -233,6 +246,6 @@ def main(json_file_path):
     print(f"All plots have been generated and saved in {output_dir}")
 
 if __name__ == "__main__":
-    json_file_path = r"C:\Users\jraldua-veuthey\Documents\Github\SPAR_StegSnow\experiments\2_targeted_censorship\experiment_logs_20240725_120349.json"
+    json_file_path = r"C:\Users\jraldua-veuthey\Documents\Github\SPAR_StegSnow\experiments\2_targeted_censorship\experiment_logs_20240725_170544.json"
     
     main(json_file_path)
