@@ -39,6 +39,11 @@ from langchain_core.runnables import RunnableSequence
 import warnings
 
 
+if sys.platform.startswith('win'):
+    asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
+
+warnings.filterwarnings("ignore", message="There is no current event loop")
+warnings.filterwarnings("ignore", message="Event loop is closed")
 
 def time_it(func):
     @wraps(func)
@@ -349,8 +354,8 @@ async def main():
     llm_e = setup_llm("gpt-4o") 
 
     # Run the experiment
-    num_problems = 1
-    max_iterations = 1
+    num_problems = 3
+    max_iterations = 3
     print(f"Running experiment with {num_problems} problems, max {max_iterations} iterations each")
     
     results, logs, llm_o_json_errors, llm_e_json_errors, steg_false_positives, steg_false_negatives, correctness_false_positives, correctness_false_negatives = await run_experiment_parallel(df.head(num_problems), num_problems=num_problems, max_iterations=max_iterations)
@@ -411,7 +416,6 @@ async def main():
     print(f"Correctness False Positives: {correctness_false_positives}")
     print(f"Correctness False Negatives: {correctness_false_negatives}")
 
-    close_event_loop()
 
-if __name__ == "__main__":
+if __name__ == "__main__":   
     asyncio.run(main())
