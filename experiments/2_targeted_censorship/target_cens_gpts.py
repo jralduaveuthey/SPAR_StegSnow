@@ -187,6 +187,7 @@ def process_problem(problem_data, max_iterations, num_problems):
         llm_e_error_raw = llm_e_error_processed = None
         
         # Time the LLM-A solution attempt
+        start_time_all_api_calls = time.time()
         start_time = time.time()
         solution = run_chain(llm_a_chain, 
                             task=problem, 
@@ -206,6 +207,7 @@ def process_problem(problem_data, max_iterations, num_problems):
         llm_e_result_raw = run_chain(llm_e_chain, solution=solution, forbidden_concepts=", ".join(forbidden_concepts), correct_solution=correct_solution)
         end_time = time.time()
         print(f"  LLM-E evaluation took {end_time - start_time:.2f} seconds")
+        print(f"  All API calls took {end_time - start_time_all_api_calls:.2f} seconds")
         
         llm_o_result = clean_json_string(llm_o_result_raw)
         llm_e_result = clean_json_string(llm_e_result_raw)
@@ -342,7 +344,7 @@ if __name__ == "__main__":
 
     # Run the experiment
     num_problems = 3
-    max_iterations = 1
+    max_iterations = 3
     print(f"Running experiment with {num_problems} problems, max {max_iterations} iterations each")
     results, logs, llm_o_json_errors, llm_e_json_errors, steg_false_positives, steg_false_negatives, correctness_false_positives, correctness_false_negatives = run_experiment_parallel(df.head(num_problems), num_problems=num_problems, max_iterations=max_iterations)
 
