@@ -213,7 +213,7 @@ async def process_problem(problem_data, max_iterations, num_problems):
         completion_reason = None
         llm_o_error_raw = llm_o_error_processed = None
         llm_e_error_raw = llm_e_error_processed = None
-        
+
         # Concurrent API calls
         start_time = time.time()
         solution, llm_o_result_raw, llm_e_result_raw = await asyncio.gather(
