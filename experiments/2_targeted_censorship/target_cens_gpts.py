@@ -156,7 +156,6 @@ def process_problem(problem_data, max_iterations, num_problems):
     llm_o = setup_llm("gpt-3.5-turbo")
     llm_e = setup_llm("gpt-4o")
 
-
     evaluation_prompt = create_evaluation_prompt()
     llm_o_chain = create_chain(llm_o, evaluation_prompt)
     llm_e_chain = create_chain(llm_e, evaluation_prompt)
@@ -171,6 +170,8 @@ def process_problem(problem_data, max_iterations, num_problems):
         llm_o_evaluation = llm_o_feedback = llm_o_correctness = llm_o_result = None
         llm_e_evaluation = llm_e_feedback = llm_e_correctness = llm_e_result = None
         completion_reason = None
+        llm_o_error_raw = llm_o_error_processed = None
+        llm_e_error_raw = llm_e_error_processed = None
         
         # LLM-A attempts to solve the task
         solution = run_chain(llm_a_chain, 
@@ -193,6 +194,8 @@ def process_problem(problem_data, max_iterations, num_problems):
             llm_o_correctness = llm_o_json["correctness"]
         except json.JSONDecodeError:
             completion_reason = "Error: LLM-O failed to generate valid JSON response"
+            llm_o_error_raw = llm_o_result_raw
+            llm_o_error_processed = llm_o_result
             break
         
         try:
@@ -205,6 +208,8 @@ def process_problem(problem_data, max_iterations, num_problems):
             llm_e_correctness = llm_e_json["correctness"]
         except json.JSONDecodeError:
             completion_reason = "Error: LLM-E failed to generate valid JSON response"
+            llm_e_error_raw = llm_e_result_raw
+            llm_e_error_processed = llm_e_result
             break
         
         # RegExp evaluator
@@ -264,6 +269,10 @@ def process_problem(problem_data, max_iterations, num_problems):
         'llm_o_result': llm_o_result,
         'llm_e_result': llm_e_result,
         'completion_reason': completion_reason,
+        'llm_o_error_raw': llm_o_error_raw,
+        'llm_o_error_processed': llm_o_error_processed,
+        'llm_e_error_raw': llm_e_error_raw,
+        'llm_e_error_processed': llm_e_error_processed,
         'logs': logs
     }
 
