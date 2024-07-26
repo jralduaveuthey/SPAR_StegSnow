@@ -28,6 +28,18 @@ import openai
 from datetime import datetime
 from tqdm import tqdm
 import multiprocessing
+import time
+from functools import wraps
+
+def time_it(func):
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        start_time = time.time()
+        result = func(*args, **kwargs)
+        end_time = time.time()
+        print(f"{func.__name__} took {end_time - start_time:.2f} seconds")
+        return result
+    return wrapper
 
 def find_root_directory():
     current_dir = os.getcwd()
@@ -143,6 +155,7 @@ def regexp_evaluator(solution, forbidden_concepts, correct_solution):
     return found_forbidden_concepts, found_correct_solution
 
 
+@time_it
 def process_problem(problem_data, max_iterations, num_problems):
     i, row = problem_data
     problem = row['problem']
@@ -173,16 +186,28 @@ def process_problem(problem_data, max_iterations, num_problems):
         llm_o_error_raw = llm_o_error_processed = None
         llm_e_error_raw = llm_e_error_processed = None
         
-        # LLM-A attempts to solve the task
+        # Time the LLM-A solution attempt
+        start_time = time.time()
         solution = run_chain(llm_a_chain, 
-                                task=problem, 
-                                forbidden_concepts=", ".join(forbidden_concepts),
-                                previous_feedback=previous_feedback)
+                            task=problem, 
+                            forbidden_concepts=", ".join(forbidden_concepts),
+                            previous_feedback=previous_feedback)
+        end_time = time.time()
+        print(f"  LLM-A solution attempt took {end_time - start_time:.2f} seconds")
         
-        # LLM-O and LLM-E evaluate the solution using the same prompt
+        # Time the LLM-O evaluation
+        start_time = time.time()
         llm_o_result_raw = run_chain(llm_o_chain, solution=solution, forbidden_concepts=", ".join(forbidden_concepts), correct_solution=correct_solution)
-        llm_o_result = clean_json_string(llm_o_result_raw)
+        end_time = time.time()
+        print(f"  LLM-O evaluation took {end_time - start_time:.2f} seconds")
+        
+        # Time the LLM-E evaluation
+        start_time = time.time()
         llm_e_result_raw = run_chain(llm_e_chain, solution=solution, forbidden_concepts=", ".join(forbidden_concepts), correct_solution=correct_solution)
+        end_time = time.time()
+        print(f"  LLM-E evaluation took {end_time - start_time:.2f} seconds")
+        
+        llm_o_result = clean_json_string(llm_o_result_raw)
         llm_e_result = clean_json_string(llm_e_result_raw)
         
         # Parse the JSON responses
@@ -303,6 +328,7 @@ def run_experiment_parallel(df, num_problems=2, max_iterations=5):
 
 if __name__ == "__main__":
     SHOW_PLOTS = False
+    SHOW_SUMMARY = False
 
     load_env_and_set_api_key()
 
@@ -315,8 +341,8 @@ if __name__ == "__main__":
     llm_e = setup_llm("gpt-4o") 
 
     # Run the experiment
-    num_problems = 10
-    max_iterations = 30
+    num_problems = 3
+    max_iterations = 1
     print(f"Running experiment with {num_problems} problems, max {max_iterations} iterations each")
     results, logs, llm_o_json_errors, llm_e_json_errors, steg_false_positives, steg_false_negatives, correctness_false_positives, correctness_false_negatives = run_experiment_parallel(df.head(num_problems), num_problems=num_problems, max_iterations=max_iterations)
 
@@ -329,13 +355,13 @@ if __name__ == "__main__":
         plt.title(f'Iterations Needed to Reach Solution (Total: {num_problems} problems)')
         plt.show()
 
-    # Print summary
-    print("\nResults Summary:")
-    for i, result in enumerate(results, 1):
-        print(f"\nProblem {i}/{num_problems}: {result['problem']}")
-        print(f"Iterations: {result['iterations']}/{max_iterations}")
-        print(f"LLM-O final result: {result['llm_o_result']}")
-        print(f"LLM-E final result: {result['llm_e_result']}")
+    if SHOW_SUMMARY:
+        print("\nResults Summary:")
+        for i, result in enumerate(results, 1):
+            print(f"\nProblem {i}/{num_problems}: {result['problem']}")
+            print(f"Iterations: {result['iterations']}/{max_iterations}")
+            print(f"LLM-O final result: {result['llm_o_result']}")
+            print(f"LLM-E final result: {result['llm_e_result']}")
 
     # Save logs to JSON file
     log_data = {
