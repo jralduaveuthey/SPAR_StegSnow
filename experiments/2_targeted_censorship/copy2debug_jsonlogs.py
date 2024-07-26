@@ -3,7 +3,7 @@ import os
 from typing import Dict, Any, List
 
 # Configuration
-FILE_NAME = "experiment_logs_20240726_110631.json"  # Name of the input JSON file
+FILE_NAME = "experiment_logs_20240726_160740.json"  # Name of the input JSON file
 INPUT_FILE = os.path.join(os.path.dirname(__file__),FILE_NAME)
 FILTER_CRITERIA = {
     "completion_reason": "Error: LLM-E failed to generate valid JSON response"

@@ -7,11 +7,10 @@
 
 #TODO: (depending on the results from the plots) modify the script so that there is a history of the conversation so that the LLM-A can see to see its previous responses, so that the feedback from the LLM-O makes more sense. Add a variable to (de)activate this feature of using the history of the conversation.
 #TODO: reconsider what I want to happen when there are False Positives/Negatives
+#TODO: consider adding an LLM-json-corrector if it does not complicate the logic too much
 
 # NOTE: if the regexp evaluator says that there is a forbidden concept, but LLM-O or LLM-E says that there is no forbidden concept then this is a warning that should be detected and analyzed.
 # NOTE: The answer from LLM-E is the ground truth. So if LLM-O says that there is no forbidden concept, but LLM-E says that there is a forbidden concept, then this is a False Negative. If LLM-O says that there is a forbidden concept, but LLM-E says that there is no forbidden concept, then this is a False Positive. If both LLM-O and LLM-E agree, then this is a True Positive or True Negative. The goal is to have as many True Positives and True Negatives as possible.
-
-# TODO: modify so that "# Setup LLMs" is only done in the main
 
 import os
 import sys
@@ -184,7 +183,7 @@ def regexp_evaluator(solution, forbidden_concepts, correct_solution):
 
 
 @time_it
-async def process_problem(problem_data, max_iterations, num_problems):
+async def process_problem(problem_data, max_iterations, num_problems, llm_a_chain, llm_o_chain, llm_e_chain):
     i, row = problem_data
     problem = row['problem']
     forbidden_concepts = [str(row['intermediate_1']), str(row['intermediate_2'])]
@@ -192,18 +191,6 @@ async def process_problem(problem_data, max_iterations, num_problems):
     print(f"\nProblem {i+1}/{num_problems}: {problem}")
     previous_feedback = ""
     
-    # Setup LLMs
-    llm_a = setup_llm("gpt-4o-mini")
-    llm_o = setup_llm("gpt-3.5-turbo")
-    llm_e = setup_llm("gpt-4o")
-
-    evaluation_prompt = create_evaluation_prompt()
-    llm_o_chain = create_chain(llm_o, evaluation_prompt)
-    llm_e_chain = create_chain(llm_e, evaluation_prompt)
-
-    llm_a_prompt = create_llm_a_prompt()
-    llm_a_chain = create_chain(llm_a, llm_a_prompt)
-
     logs = []
     
     for iteration in range(max_iterations):
@@ -216,10 +203,11 @@ async def process_problem(problem_data, max_iterations, num_problems):
 
         # Concurrent API calls
         start_time = time.time()
-        solution, llm_o_result_raw, llm_e_result_raw = await asyncio.gather(
-            run_chain(llm_a_chain, task=problem, forbidden_concepts=", ".join(forbidden_concepts), previous_feedback=previous_feedback),
-            run_chain(llm_o_chain, solution="", forbidden_concepts=", ".join(forbidden_concepts), correct_solution=correct_solution),
-            run_chain(llm_e_chain, solution="", forbidden_concepts=", ".join(forbidden_concepts), correct_solution=correct_solution)
+        solution = await run_chain(llm_a_chain, task=problem, forbidden_concepts=", ".join(forbidden_concepts), previous_feedback=previous_feedback)
+
+        llm_o_result_raw, llm_e_result_raw = await asyncio.gather(
+            run_chain(llm_o_chain, solution=solution, forbidden_concepts=", ".join(forbidden_concepts), correct_solution=correct_solution),
+            run_chain(llm_e_chain, solution=solution, forbidden_concepts=", ".join(forbidden_concepts), correct_solution=correct_solution)
         )
         end_time = time.time()
         print(f"All API calls took {end_time - start_time:.2f} seconds; for problem {i+1}/{num_problems}, iteration {iteration+1}/{max_iterations}")
@@ -318,8 +306,8 @@ async def process_problem(problem_data, max_iterations, num_problems):
         'logs': logs
     }
 
-async def run_experiment_parallel(df, num_problems=2, max_iterations=5):
-    tasks = [process_problem((i, row), max_iterations, num_problems) for i, row in df.iterrows()]
+async def run_experiment_parallel(df, num_problems=2, max_iterations=5, llm_a_chain=None, llm_o_chain=None, llm_e_chain=None):
+    tasks = [process_problem((i, row), max_iterations, num_problems, llm_a_chain, llm_o_chain, llm_e_chain) for i, row in df.iterrows()]
     results = await asyncio.gather(*tasks)
     
     # Separate results and logs
@@ -351,14 +339,32 @@ async def main():
     # Setup LLMs
     llm_a = setup_llm("gpt-4o-mini")  
     llm_o = setup_llm("gpt-3.5-turbo")
-    llm_e = setup_llm("gpt-4o") 
+    llm_e = setup_llm("gpt-4o")
+
+    # Create prompts
+    llm_a_prompt = create_llm_a_prompt()
+    evaluation_prompt = create_evaluation_prompt()
+
+    # Create chains
+    llm_a_chain = create_chain(llm_a, llm_a_prompt)
+    llm_o_chain = create_chain(llm_o, evaluation_prompt)
+    llm_e_chain = create_chain(llm_e, evaluation_prompt)
+
+
 
     # Run the experiment
-    num_problems = 50
+    num_problems = 10
     max_iterations = 30
     print(f"Running experiment with {num_problems} problems, max {max_iterations} iterations each")
     
-    results, logs, llm_o_json_errors, llm_e_json_errors, steg_false_positives, steg_false_negatives, correctness_false_positives, correctness_false_negatives = await run_experiment_parallel(df.head(num_problems), num_problems=num_problems, max_iterations=max_iterations)
+    results, logs, llm_o_json_errors, llm_e_json_errors, steg_false_positives, steg_false_negatives, correctness_false_positives, correctness_false_negatives = await run_experiment_parallel(
+        df.head(num_problems), 
+        num_problems=num_problems, 
+        max_iterations=max_iterations,
+        llm_a_chain=llm_a_chain,
+        llm_o_chain=llm_o_chain,
+        llm_e_chain=llm_e_chain
+    )
 
 
     # Basic analysis and visualization
