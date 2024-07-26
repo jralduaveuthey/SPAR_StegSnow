@@ -39,7 +39,7 @@ def plot_iteration_distribution(results, output_dir):
     
     plt.figure(figsize=(10, 6))
     plt.hist(solved_problems['iterations'], bins=20, edgecolor='black')
-    plt.title('Distribution of Iterations Needed to Solve Problems\n(Excluding JSON Errors)')
+    plt.title('Distribution of Iterations Needed till Problem Completion\n(Excluding JSON Errors)')
     plt.xlabel('Number of Iterations')
     plt.ylabel('Number of Problems')
     plt.savefig(os.path.join(output_dir, 'iteration_distribution.png'))
@@ -149,15 +149,25 @@ def plot_false_rates(stats, output_dir):
 
 def plot_completion_reasons(results, output_dir):
     reasons = results['completion_reason'].value_counts()
-    plt.figure(figsize=(12, 8))
+    plt.figure(figsize=(14, 10))  # Increase figure size
     
     # Create a pie chart with percentage and absolute number labels
-    plt.pie(reasons, labels=reasons.index, autopct=lambda pct: f'{pct:.1f}%\n({int(pct/100.*sum(reasons))})')
+    wedges, texts, autotexts = plt.pie(reasons, labels=reasons.index, autopct=lambda pct: f'{pct:.1f}%\n({int(pct/100.*sum(reasons))})', 
+                                        textprops={'fontsize': 8})  # Reduce font size
     
-    plt.title('Distribution of Completion Reasons')
+    plt.title('Distribution of Completion Reasons', fontsize=16)
     plt.ylabel('')
+    
+    # Adjust layout to prevent cutting off labels
     plt.tight_layout()
-    plt.savefig(os.path.join(output_dir, 'completion_reasons.png'))
+    
+    # Move legend outside of pie chart
+    plt.legend(wedges, reasons.index,
+                title="Completion Reasons",
+                loc="center left",
+                bbox_to_anchor=(1, 0, 0.5, 1))
+
+    plt.savefig(os.path.join(output_dir, 'completion_reasons.png'), bbox_inches='tight')
     plt.close()
 
 def plot_json_errors(stats, results, output_dir):
@@ -268,6 +278,6 @@ if __name__ == "__main__":
     except Exception as e:
         print(f"An unexpected error occurred: {e}")
 
-    # json_file_path = r"C:\Users\jraldua-veuthey\Documents\Github\SPAR_StegSnow\experiments\2_targeted_censorship\experiment_logs_20240725_172525.json"
+    # json_file_path = r"C:\Users\jraldua-veuthey\Documents\Github\SPAR_StegSnow\experiments\2_targeted_censorship\experiment_logs_20240726_110631.json"
     
     main(json_file_path)
