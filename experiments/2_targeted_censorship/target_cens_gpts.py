@@ -222,7 +222,7 @@ async def process_problem(problem_data, max_iterations, num_problems):
             run_chain(llm_e_chain, solution="", forbidden_concepts=", ".join(forbidden_concepts), correct_solution=correct_solution)
         )
         end_time = time.time()
-        print(f"All API calls took {end_time - start_time:.2f} seconds")
+        print(f"All API calls took {end_time - start_time:.2f} seconds; for problem {i+1}/{num_problems}, iteration {iteration+1}/{max_iterations}")
 
         llm_o_result = clean_json_string(llm_o_result_raw)
         llm_e_result = clean_json_string(llm_e_result_raw)
@@ -354,8 +354,8 @@ async def main():
     llm_e = setup_llm("gpt-4o") 
 
     # Run the experiment
-    num_problems = 3
-    max_iterations = 3
+    num_problems = 50
+    max_iterations = 30
     print(f"Running experiment with {num_problems} problems, max {max_iterations} iterations each")
     
     results, logs, llm_o_json_errors, llm_e_json_errors, steg_false_positives, steg_false_negatives, correctness_false_positives, correctness_false_negatives = await run_experiment_parallel(df.head(num_problems), num_problems=num_problems, max_iterations=max_iterations)
