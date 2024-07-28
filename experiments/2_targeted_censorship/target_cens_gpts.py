@@ -390,7 +390,7 @@ async def main():
 
     # Run the experiment
     num_problems = 20
-    max_iterations = 20
+    max_iterations = 50
     print(f"Running experiment with {num_problems} problems, max {max_iterations} iterations each")
     
     results, logs, llm_o_json_errors, llm_e_json_errors, steg_false_positives, steg_false_negatives, correctness_false_positives, correctness_false_negatives = await run_experiment_parallel(
