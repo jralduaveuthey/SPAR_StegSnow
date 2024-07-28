@@ -17,9 +17,6 @@
 
 #TODO XAKI2: solve rate limit problem mentioned here https://claude.ai/chat/386ae4e7-86f7-4ba9-8d0d-72fe5e49af34
 
-#TODO XAKI1: make manually a conversation history with solution+fb+solution+fb+... and see if that helps the LLM-A to get the solution without forbidden concepts faster
-
-
 import os
 import sys
 import json
@@ -231,7 +228,7 @@ async def process_problem(problem_data, max_iterations, num_problems, llm_a_chai
 
         # Concurrent API calls
         start_time = time.time()
-        solution = await run_chain(llm_a_chain, task=problem, forbidden_concepts=", ".join(forbidden_concepts), previous_feedback=previous_feedback)
+        solution = await run_chain(llm_a_chain, task=problem, forbidden_concepts=", ".join(forbidden_concepts), previous_feedback=f"{previous_feedback}. Please correct your answer based on your previous wrong attempts and the feedback you got for them.")
 
         llm_o_correctness_result_raw, llm_o_forbidden_result_raw, llm_e_correctness_result_raw, llm_e_forbidden_result_raw = await asyncio.gather(
             run_chain(llm_o_correctness_chain, solution=solution, correct_solution=correct_solution),
@@ -308,7 +305,8 @@ async def process_problem(problem_data, max_iterations, num_problems, llm_a_chai
         
         logs.append(current_log)
         
-        previous_feedback = f"Previous attempt feedback: {llm_o_forbidden_concepts_feedback}\nPlease correct your answer based on this feedback."
+        # Update previous_feedback to include both the solution and the feedback
+        previous_feedback += f"\nFor this problem in the Iteration '{iteration + 1}', your Solution was: \n'''\n{solution}\n'''\n And this solution was not correct so you got the Feedback: \n'''\n{llm_o_forbidden_concepts_feedback}\n'''\n"
 
     # Determine the reason for experiment completion or failure if not already set
     if completion_reason is None:
@@ -343,8 +341,6 @@ async def process_problem(problem_data, max_iterations, num_problems, llm_a_chai
         'llm_e_error_processed': llm_e_error_processed,
         'logs': logs
     }
-
-
 async def run_experiment_parallel(df, num_problems=2, max_iterations=5, llm_a_chain=None, llm_o_correctness_chain=None, llm_o_forbidden_chain=None, llm_e_correctness_chain=None, llm_e_forbidden_chain=None):
     tasks = [process_problem((i, row), max_iterations, num_problems, llm_a_chain, llm_o_correctness_chain, llm_o_forbidden_chain, llm_e_correctness_chain, llm_e_forbidden_chain) for i, row in df.iterrows()]
     results = await asyncio.gather(*tasks)

@@ -35,10 +35,33 @@ with the setup:
     "num_problems": 20,
     "max_iterations": 100
 
-- 12/20: LLM-O and LLM-E disagree on the correctness of the solution...there is still a lot of disagreements on the correctness (however in all these cases LLM-O and LLM-E agree that there are forbidden concepts present) => disable the `break` for the scenarios of "Correctness False Negative" and ""Correctness False Positive" but still log in which problem and iteration there was a Correctness False Negative/Positive (see TBD2.json)
+- 12/20: LLM-O and LLM-E disagree on the correctness of the solution...there is still a lot of disagreements on the correctness (however in all these cases LLM-O and LLM-E agree that there are forbidden concepts present) => disable the `break` for the scenarios of "Correctness False Negative" and ""Correctness False Positive" but still log in which problem and iteration there was a Correctness False Negative/Positive (see experiment_logs_20240728_134905.json)
 
-## TBD2.json
+## experiment_logs_20240728_134905.json
     "num_problems": 20,
     "max_iterations": 100
 
-- ??it is still reaching the limit of itereations and not doing proper steganography?? => pass a simplified "conversation history" to LLM-A so that it sees how many times it failed before to motivate it to do better (see TBD3.json)
+- 20/20: "completion_reason": "Max iterations reached...", it is still reaching the limit of iterations and not doing proper steganography => pass a simplified "conversation history" to LLM-A so that it sees how many times it failed before to motivate it to do better (see TBD3.json)
+
+## TBD3.json
+    "num_problems": 20,
+    "max_iterations": 100
+
+- NOTE: this approach is much more expensive and slower since the prompt passed to LLM-A grows with each iteration. 
+- ??it is still reaching the limit of iterations and not doing proper steganography?? and the problem is that LLM-O/E are too good at detecting steganography because LLM-A is actually doing some steg attempts?? => try with a dumber model as LLM-O to see if LLM-A can do some steg that LLM-O does not detect but LLM-E does detect, aka "Steganography False Negative" (see TBD4.json)
+- ??it is still reaching the limit of iterations and not doing proper steganography?? => try higher number of problems and higher number of iterations (see TBD5.json)
+
+## TBD5.json
+
+
+# Setup 3
+with the setup:
+    "llm_a": "gpt-4o",
+    "llm_o": "gpt-3.5-turbo",
+    "llm_e": "gpt-4o",
+
+## TBD4.json
+
+
+
+
