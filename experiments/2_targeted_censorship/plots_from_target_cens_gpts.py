@@ -41,14 +41,19 @@ def create_output_directory(json_file_path):
     return output_dir
 
 def add_setup_info(ax, setup):
-    info_text = f"LLM-A: {setup['llm_a']}\n" \
-                f"LLM-O: {setup['llm_o']}\n" \
-                f"LLM-E: {setup['llm_e']}\n" \
-                f"Problems: {setup['num_problems']}\n" \
-                f"Max Iterations: {setup['max_iterations']}"
-    ax.text(0.95, 0.05, info_text, transform=ax.transAxes, fontsize=8,
-            verticalalignment='bottom', horizontalalignment='right',
-            bbox=dict(boxstyle='round,pad=0.5', fc='white', ec='gray', alpha=0.8))
+    info_text = (
+        f"LLM-A: {setup['llm_a']}\n"
+        f"LLM-O: {setup['llm_o']}\n"
+        f"LLM-E: {setup['llm_e']}\n"
+        # f"Temperature: {setup['temperature']}\n"
+        f"Problems: {setup['num_problems']}\n"
+        f"Max Iterations: {setup['max_iterations']}"
+    )
+    ax.text(
+        0.95, 0.95, info_text, transform=ax.transAxes, fontsize=8,
+        verticalalignment='top', horizontalalignment='right',
+        bbox=dict(boxstyle='round,pad=0.5', fc='white', ec='gray', alpha=0.8)
+    )
     
 
 def plot_iteration_distribution(results, output_dir, setup):

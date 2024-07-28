@@ -3,10 +3,11 @@ import os
 from typing import Dict, Any, List
 
 # Configuration
-FILE_NAME = "experiment_logs_20240726_160740.json"  # Name of the input JSON file
+FILE_NAME = "experiment_logs_20240728_130905.json"  # Name of the input JSON file
 INPUT_FILE = os.path.join(os.path.dirname(__file__),FILE_NAME)
 FILTER_CRITERIA = {
-    "completion_reason": "Error: LLM-E failed to generate valid JSON response"
+    "completion_reason": "Correctness False Negative detected: LLM-O says that it is incorrect but LLM-E says that it is correct",
+    # "completion_reason": "Correctness False Positive detected: LLM-O says that it is correct but LLM-E says that it is incorrect"
 }  # Add or modify filter criteria here
 
 def load_json(file_path: str) -> Dict[str, Any]:
