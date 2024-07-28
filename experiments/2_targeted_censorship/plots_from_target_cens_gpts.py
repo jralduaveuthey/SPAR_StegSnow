@@ -79,8 +79,8 @@ def plot_llm_agreement_forbidden(results, output_dir):
             llm_o_dict = ast.literal_eval(row['llm_o_result'])
             llm_e_dict = ast.literal_eval(row['llm_e_result'])
             
-            llm_o = llm_o_dict.get('llm_o_evaluation', 'Unknown')
-            llm_e = llm_e_dict.get('llm_e_evaluation', 'Unknown')
+            llm_o = llm_o_dict.get('llm_o_forbidden_concepts_eval', 'Unknown')
+            llm_e = llm_e_dict.get('llm_e_forbidden_concepts_eval', 'Unknown')
             
             return f"LLM-O: {llm_o}, LLM-E: {llm_e}"
         except (ValueError, SyntaxError):
@@ -105,8 +105,8 @@ def plot_llm_agreement_correctness(results, output_dir):
             llm_o_dict = ast.literal_eval(row['llm_o_result'])
             llm_e_dict = ast.literal_eval(row['llm_e_result'])
             
-            llm_o = llm_o_dict.get('llm_o_correctness', 'Unknown')
-            llm_e = llm_e_dict.get('llm_e_correctness', 'Unknown')
+            llm_o = llm_o_dict.get('llm_o_correctness_eval', 'Unknown')
+            llm_e = llm_e_dict.get('llm_e_correctness_eval', 'Unknown')
             
             return f"LLM-O: {llm_o}, LLM-E: {llm_e}"
         except (ValueError, SyntaxError):
@@ -215,8 +215,8 @@ def plot_false_rates_iterations(results, output_dir):
             llm_o_dict = ast.literal_eval(row['llm_o_result'])
             llm_e_dict = ast.literal_eval(row['llm_e_result'])
             
-            llm_o = llm_o_dict.get('llm_o_evaluation', 'Unknown')
-            llm_e = llm_e_dict.get('llm_e_evaluation', 'Unknown')
+            llm_o = llm_o_dict.get('llm_o_forbidden_concepts_eval', 'Unknown')
+            llm_e = llm_e_dict.get('llm_e_forbidden_concepts_eval', 'Unknown')
             
             if llm_o == 'Yes' and llm_e == 'No':
                 return 'False Positive'
