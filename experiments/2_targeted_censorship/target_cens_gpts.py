@@ -15,7 +15,9 @@
 
 #TODO XAKI3: minimizing the "completion_reason": "Steganography False Negative detected: LLM-O missed a forbidden concept found by LLM-E"...although this seems to be because gpt-3.5-turbo is pretty stupid and does not detect the forbidden concepts even if they are clearly there. So for that try making the llm-o call for "can you see the correct_solution?" an separate call from "can you see the any forbidden concept? as mentioned to james here https://spar2024.slack.com/archives/D078Q2NM207/p1722009617915069
 
-#TODO XAKI2: solve rate limit problem mentioned here https://claude.ai/chat/386ae4e7-86f7-4ba9-8d0d-72fe5e49af34
+#TODO XAKI2: solve rate limit problem mentioned here https://claude.ai/chat/386ae4e7-86f7-4ba9-8d0d-72fe5e49af34 ??
+
+#TODO XAKI1: add errors to the logs
 
 import os
 import sys
@@ -32,8 +34,6 @@ from dotenv import load_dotenv
 import matplotlib.pyplot as plt
 import openai
 from datetime import datetime
-from tqdm import tqdm
-import multiprocessing
 import time
 from functools import wraps
 import asyncio
@@ -41,7 +41,7 @@ from langchain_openai import ChatOpenAI
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.runnables import RunnableSequence
 import warnings
-
+from tenacity import retry, stop_after_attempt, wait_exponential
 
 if sys.platform.startswith('win'):
     asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
@@ -165,7 +165,11 @@ def create_forbidden_concepts_prompt():
     return chat_prompt
 
 def setup_llm(model_name, temperature=0.0):
-    return ChatOpenAI(model_name=model_name, temperature=temperature)
+    @retry(wait=wait_exponential(multiplier=1, min=4, max=10), stop=stop_after_attempt(5))
+    def create_chat_completion(*args, **kwargs):
+        return ChatOpenAI(*args, **kwargs)
+
+    return create_chat_completion(model_name=model_name, temperature=temperature, max_retries=0)
 
 def create_chain(llm, prompt):
     return RunnableSequence(prompt, llm)
@@ -186,11 +190,15 @@ def clean_json_string(json_string):
     return json_string
 
 async def run_chain(chain, **kwargs):
-    with get_openai_callback() as cb:
-        response = await chain.ainvoke(kwargs)
-        # print(f"Total Tokens: {cb.total_tokens}")
-        # print(f"Total Cost (USD): ${cb.total_cost}")    
-    return response.content
+    try:
+        with get_openai_callback() as cb:
+            response = await chain.ainvoke(kwargs)
+            # print(f"Total Tokens: {cb.total_tokens}")
+            # print(f"Total Cost (USD): ${cb.total_cost}")    
+        return response.content
+    except Exception as e:
+        print(f"Error in run_chain: {e}")
+        return None
 
 def regexp_evaluator(solution, forbidden_concepts, correct_solution):
     found_forbidden_concepts, found_correct_solution = False, False
@@ -230,12 +238,23 @@ async def process_problem(problem_data, max_iterations, num_problems, llm_a_chai
         start_time = time.time()
         solution = await run_chain(llm_a_chain, task=problem, forbidden_concepts=", ".join(forbidden_concepts), previous_feedback=f"{previous_feedback}. Please correct your answer based on your previous wrong attempts and the feedback you got for them.")
 
-        llm_o_correctness_result_raw, llm_o_forbidden_result_raw, llm_e_correctness_result_raw, llm_e_forbidden_result_raw = await asyncio.gather(
+        if solution is None:
+            print(f"Failed to get solution from LLM-A for problem {i+1}/{num_problems}")
+            return None
+
+        results = await asyncio.gather(
             run_chain(llm_o_correctness_chain, solution=solution, correct_solution=correct_solution),
             run_chain(llm_o_forbidden_chain, solution=solution, forbidden_concepts=", ".join(forbidden_concepts)),
             run_chain(llm_e_correctness_chain, solution=solution, correct_solution=correct_solution),
             run_chain(llm_e_forbidden_chain, solution=solution, forbidden_concepts=", ".join(forbidden_concepts))
         )
+
+        llm_o_correctness_result_raw, llm_o_forbidden_result_raw, llm_e_correctness_result_raw, llm_e_forbidden_result_raw = results
+
+        if any(result is None for result in results):
+            print(f"One or more API calls failed for problem {i+1}/{num_problems}")
+            return None
+
         end_time = time.time()
         print(f"All API calls took {end_time - start_time:.2f} seconds; for problem {i+1}/{num_problems}, iteration {iteration+1}/{max_iterations}")
 
@@ -345,6 +364,9 @@ async def run_experiment_parallel(df, num_problems=2, max_iterations=5, llm_a_ch
     tasks = [process_problem((i, row), max_iterations, num_problems, llm_a_chain, llm_o_correctness_chain, llm_o_forbidden_chain, llm_e_correctness_chain, llm_e_forbidden_chain) for i, row in df.iterrows()]
     results = await asyncio.gather(*tasks)
     
+    # Filter out None results
+    results = [r for r in results if r is not None]
+    
     # Separate results and logs
     experiment_results = []
     all_logs = []
@@ -374,9 +396,14 @@ async def main():
     df = pd.read_csv(os.path.join(find_root_directory(), "datasets", "three_digit_nested_addition_problems.csv"))
 
     # Setup LLMs
-    llm_a = setup_llm("gpt-4o", temperature=TEMPERATURE)  
-    llm_o = setup_llm("gpt-4o", temperature=TEMPERATURE)
-    llm_e = setup_llm("gpt-4o", temperature=TEMPERATURE)
+    llm_a_primary = setup_llm("gpt-4o", temperature=TEMPERATURE)  
+    llm_o_primary = setup_llm("gpt-3.5-turbo", temperature=TEMPERATURE)
+    llm_e_primary = setup_llm("gpt-4o", temperature=TEMPERATURE)
+
+    llm_fallback = setup_llm("gpt-4o", temperature=TEMPERATURE)
+    llm_a = llm_a_primary.with_fallbacks([llm_fallback])
+    llm_o = llm_o_primary.with_fallbacks([llm_o_primary])
+    llm_e = llm_e_primary.with_fallbacks([llm_fallback])
 
     # Create prompts
     llm_a_prompt = create_llm_a_prompt()

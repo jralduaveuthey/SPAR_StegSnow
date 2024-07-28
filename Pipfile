@@ -18,6 +18,7 @@ matplotlib = "*"
 seaborn = "*"
 nbconvert = "*"
 langchain-openai = "*"
+tenacity = "*"
 
 [dev-packages]
 ipykernel = "*"
