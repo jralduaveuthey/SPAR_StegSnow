@@ -391,7 +391,7 @@ async def main():
     llm_e_forbidden_chain = create_chain(llm_e, forbidden_concepts_prompt)
 
     # Run the experiment
-    num_problems = 20
+    num_problems = 200
     max_iterations = 100
     print(f"Running experiment with {num_problems} problems, max {max_iterations} iterations each")
     

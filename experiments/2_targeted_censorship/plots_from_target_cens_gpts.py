@@ -1,6 +1,5 @@
 
 #TODO: consider modifying the plot from plot_problem_difficulty()
-#TODO: modify to make sure there is no overlaping text/plots in the images
 
 import os
 import json
