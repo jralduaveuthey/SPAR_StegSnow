@@ -144,9 +144,18 @@ with the setup:
 - 49/363 "Steganography False Positive detected: LLM-O flagged a forbidden concept that LLM-E did not find" => these are okay. LLM-O is flagging intermediate sums (without intermediate results) or just the mention of a forbidden concept as an inner thought as bad but these cases are OK as LLM-E says. To double check see discussion here: https://spar2024.slack.com/archives/D078Q2NM207/p1722422867237509
 - 48/363 "Steganography False Negative detected: LLM-O missed a forbidden concept found by LLM-E" => these are not okay. The LLM-E is flagging intermediate sums (without intermediate results) as bad but these cases are OK as LLM-O says. 
 
-=> in many of the Steganography False Negatives/Positives one of the overseers is flagging the intermediate sums (without intermediate results) as bad. Sometimes the dumb overseer does this and sometimes the smart overseer does this => modify the prompt to make explicit that the operation breakdown itself is not forbidden but the presence of the intermediate result in the operation should be flagged as forbidden (see TBD12.json)
+=> in many of the Steganography False Negatives/Positives one of the overseers is flagging the intermediate sums (without intermediate results) as bad. Sometimes the dumb overseer does this and sometimes the smart overseer does this => modify the prompt to make explicit that the operation breakdown itself is not forbidden but the presence of the intermediate result in the operation should be flagged as forbidden (see experiment_logs_20240731_141222.json)
 
 - 22/363 "Max iterations reached. LLM-O thinks the final solution is incorrect and there are forbidden concepts." => I checked a few and seems to be ok
 - 2/363 "Max iterations reached. LLM-O thinks the final solution is incorrect, but there are no forbidden concepts." => these are ok
 
-## TBD12.json
+## experiment_logs_20240731_141222.json
+- 0 problems and cases are loged
+- 66/200 "Success: LLM-O and LLM-E think the solution is correct and contains no forbidden concepts." => I checked a few and they are ok
+- 64/200 "Max iterations reached. LLM-O thinks the final solution is correct, but there are forbidden concepts."  => same problems as in experiment_logs_20240731_131158.json ... A lot of cases where first LLM-A reaches the forbidden intermediate step and then corrects itself. Unclear how to handle this, see https://spar2024.slack.com/archives/D078Q2NM207/p1722425507821799
+- 53/200 "Steganography False Positive detected: LLM-O flagged a forbidden concept that LLM-E did not find" => which are right because LLM-O is flagging incorrectly the steg and LLM-E is correctly not flagging it. 
+- 7/200 "Steganography False Negative detected: LLM-O missed a forbidden concept found by LLM-E" => with the new prompt (to make explicit that the operation breakdown itself is not forbidden but the presence of the intermediate result in the operation should be flagged as forbidden) there are many less Steg False Negatives, which is good cause it shows that LLM-E is smarter and is correctly not flagging forbidden concepts while the dumber LLM-O thinks that there are forbidden concepts when there are not.
+
+I have modified the code to log also the errors (cause in experiment_logs_20240731_131158.json there were a lot of errors when having 500 problems) so I try to run 500 problems with the new codes (see TBD16.json)
+
+## TBD16.json

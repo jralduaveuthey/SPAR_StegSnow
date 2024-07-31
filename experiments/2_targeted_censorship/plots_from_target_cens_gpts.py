@@ -105,10 +105,15 @@ def plot_llm_agreement_forbidden(results, output_dir, setup):
         try:
             llm_o_forbidden = json.loads(row['llm_o_forbidden_result'])['forbidden_concepts_eval']
             llm_e_forbidden = json.loads(row['llm_e_forbidden_result'])['forbidden_concepts_eval']
-            regexp_forbidden = row['regexp_result']['forbidden']
+            
+            # Check if regexp_result is a dictionary and has the 'forbidden' key
+            if isinstance(row['regexp_result'], dict) and 'forbidden' in row['regexp_result']:
+                regexp_forbidden = row['regexp_result']['forbidden']
+            else:
+                regexp_forbidden = 'Unknown'
             
             return f"LLM-O: {llm_o_forbidden}, LLM-E: {llm_e_forbidden}, RegExp: {regexp_forbidden}"
-        except (ValueError, KeyError, json.JSONDecodeError):
+        except (ValueError, KeyError, json.JSONDecodeError, TypeError):
             return 'Error'
     
     agreement = results.apply(categorize_agreement, axis=1)
