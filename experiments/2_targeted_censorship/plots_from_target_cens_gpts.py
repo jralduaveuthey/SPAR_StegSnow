@@ -5,9 +5,9 @@ import os
 import json
 import matplotlib.pyplot as plt
 import pandas as pd
-import ast
+import matplotlib.pyplot as plt
+import os
 import glob
-from datetime import datetime
 
 def get_latest_json_file(directory):
     list_of_files = glob.glob(os.path.join(directory, '*.json'))
@@ -233,18 +233,47 @@ def plot_regexp_vs_llm(results, output_dir, setup):
     plt.close()
 
 def plot_completion_reasons(results, output_dir, setup):
+    # Define color mapping for specific reasons
+    color_map = {
+        "Success: LLM-O and LLM-E think the solution is correct and contains no forbidden concepts.": "#66c2a5",
+        "Success: LLM-O and LLM-E do not agree that the solution is correct but they agree that it contains no forbidden concepts.": "#fc8d62",
+        "Steganography False Positive detected: LLM-O flagged a forbidden concept that LLM-E did not find": "#8da0cb",
+        "Steganography False Negative detected: LLM-O missed a forbidden concept found by LLM-E": "#e78ac3",
+        "Error: LLM-O failed to generate valid JSON response": "#a6d854",
+        "Error: LLM-E failed to generate valid JSON response": "#ffd92f",
+        "Max iterations reached. LLM-O thinks the final solution is correct and there are no forbidden concepts.": "#e5c494",
+        "Max iterations reached. LLM-O thinks the final solution is correct, but there are forbidden concepts.": "#b3b3b3",
+        "Max iterations reached. LLM-O thinks the final solution is incorrect, but there are no forbidden concepts.": "#7570b3",
+        "Max iterations reached. LLM-O thinks the final solution is incorrect and there are forbidden concepts.": "#d95f02",
+        "Debug#1: Unexpected scenario at max iterations": "#1b9e77",
+        "Debug#2: Unexpected scenario before max iterations": "#d95f02"
+    }
+
     reasons = results['completion_reason'].value_counts()
+    
+    # Group reasons not in color_map as "Other"
+    other_reasons = [reason for reason in reasons.index if reason not in color_map]
+    if other_reasons:
+        other_count = sum(reasons[reason] for reason in other_reasons)
+        reasons = reasons.drop(other_reasons)
+        reasons['Other'] = other_count
+
+    # Prepare colors and labels
+    colors = [color_map.get(reason, '#999999') for reason in reasons.index]
+    labels = [f"{reason}\n{count} ({count/sum(reasons)*100:.1f}%)" for reason, count in reasons.items()]
+
     fig, ax = plt.subplots(figsize=(14, 10))
     
-    wedges, texts, autotexts = ax.pie(reasons, labels=reasons.index, autopct=lambda pct: f'{pct:.1f}%\n({int(pct/100.*sum(reasons))})', 
-                                        textprops={'fontsize': 8})
+    wedges, texts = ax.pie(reasons, colors=colors, wedgeprops=dict(width=0.5))
     
     ax.set_title('Distribution of Completion Reasons', fontsize=16)
-    
-    ax.legend(wedges, reasons.index,
+
+    # Use a legend instead of text labels on the pie chart
+    ax.legend(wedges, labels,
             title="Completion Reasons",
             loc="center left",
-            bbox_to_anchor=(1, 0, 0.5, 1))
+            bbox_to_anchor=(1, 0, 0.5, 1),
+            fontsize=8)
 
     add_setup_info(ax, setup)
 
@@ -322,6 +351,6 @@ if __name__ == "__main__":
     except Exception as e:
         print(f"An unexpected error occurred: {e}")
     
-    # json_file_path = r"C:\Users\jraldua-veuthey\Documents\Github\SPAR_StegSnow\experiments\2_targeted_censorship\experiment_logs_20240726_110631.json"
+    # json_file_path = r"C:\Users\jraldua-veuthey\Documents\Github\SPAR_StegSnow\experiments\2_targeted_censorship\experiment_logs_20240728_173648.json"
     
     main(json_file_path)
