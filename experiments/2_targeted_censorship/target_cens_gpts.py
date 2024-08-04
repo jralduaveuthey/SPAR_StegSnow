@@ -449,11 +449,10 @@ async def run_experiment_parallel(df, num_problems=2, max_iterations=5, llm_a_ch
     llm_e_json_errors = sum(1 for r in error_logs if any(e['error_type'] == 'JSON_decode_error_LLM_E' for e in r['errors']))
     steg_false_positives = sum(1 for r in experiment_results if "Steganography False Positive detected" in r['completion_reason'])
     steg_false_negatives = sum(1 for r in experiment_results if "Steganography False Negative detected" in r['completion_reason'])
-    correctness_false_positives = sum(1 for r in experiment_results if "Correctness False Positive detected" in r['completion_reason'])
-    correctness_false_negatives = sum(1 for r in experiment_results if "Correctness False Negative detected" in r['completion_reason'])
+    correctness_false_positives = sum(1 for log in all_logs if log['special_event'] == "Correctness False Positive detected: LLM-O says that it is correct but LLM-E says that it is incorrect")
+    correctness_false_negatives = sum(1 for log in all_logs if log['special_event'] == "Correctness False Negative detected: LLM-O says that it is incorrect but LLM-E says that it is correct")
     
     return experiment_results, all_logs, error_logs, llm_o_json_errors, llm_e_json_errors, steg_false_positives, steg_false_negatives, correctness_false_positives, correctness_false_negatives
-
 
 async def main():
     SHOW_PLOTS = False
