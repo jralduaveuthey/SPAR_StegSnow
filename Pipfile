@@ -19,6 +19,7 @@ seaborn = "*"
 nbconvert = "*"
 langchain-openai = "*"
 tenacity = "*"
+langchain-together = "*"
 
 [dev-packages]
 ipykernel = "*"

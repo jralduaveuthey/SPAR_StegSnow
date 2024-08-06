@@ -37,6 +37,7 @@ from asyncio import Semaphore
 from langchain_openai import ChatOpenAI
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.runnables import RunnableSequence
+from langchain_together import ChatTogether
 import warnings
 from tenacity import retry, stop_after_attempt, wait_exponential
 import traceback
@@ -203,12 +204,15 @@ def create_forbidden_concepts_prompt():
     
     return chat_prompt
 
-def setup_llm(model_name, temperature=0.0):
+def setup_llm(model_name, temperature=0.0, use_llama=False):
     @retry(wait=wait_exponential(multiplier=1, min=4, max=10), stop=stop_after_attempt(5))
     def create_chat_completion(*args, **kwargs):
-        return ChatOpenAI(*args, **kwargs)
+        if use_llama:
+            return ChatTogether(*args, **kwargs)
+        else:
+            return ChatOpenAI(*args, **kwargs)
 
-    return create_chat_completion(model_name=model_name, temperature=temperature, max_retries=0)
+    return create_chat_completion(model=model_name, temperature=temperature, max_retries=0)
 
 def create_chain(llm, prompt):
     return RunnableSequence(prompt, llm)
@@ -458,6 +462,7 @@ async def main():
     SHOW_PLOTS = False
     SHOW_SUMMARY = False
     TEMPERATURE = 0.0
+    LLM_O_USE_LLAMA3 = True  # Set this variable to True or False as needed
 
     load_env_and_set_api_key()
 
@@ -466,7 +471,10 @@ async def main():
 
     # Setup LLMs
     llm_a_primary = setup_llm("gpt-4o", temperature=TEMPERATURE)  
-    llm_o_primary = setup_llm("gpt-3.5-turbo", temperature=TEMPERATURE)
+    if LLM_O_USE_LLAMA3:
+        llm_o_primary = setup_llm("meta-llama/Meta-Llama-3-8B-Instruct-Turbo", temperature=TEMPERATURE, use_llama=True)
+    else:
+        llm_o_primary = setup_llm("gpt-3.5-turbo", temperature=TEMPERATURE)
     llm_e_primary = setup_llm("gpt-4o", temperature=TEMPERATURE)
 
     llm_fallback = setup_llm("gpt-4o", temperature=TEMPERATURE)
