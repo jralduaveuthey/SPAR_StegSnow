@@ -33,7 +33,6 @@ from datetime import datetime
 import time
 from functools import wraps
 import asyncio
-from asyncio import Semaphore
 from langchain_openai import ChatOpenAI
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.runnables import RunnableSequence
@@ -47,53 +46,6 @@ if sys.platform.startswith('win'):
 
 warnings.filterwarnings("ignore", message="There is no current event loop")
 warnings.filterwarnings("ignore", message="Event loop is closed")
-
-class AdaptiveSemaphore:
-    def __init__(self, initial_value=50, min_value=1, max_value=1000, increase_rate=1.2, decrease_rate=0.5):
-        self.semaphore = Semaphore(initial_value)
-        self.value = initial_value
-        self.min_value = min_value
-        self.max_value = max_value
-        self.increase_rate = increase_rate
-        self.decrease_rate = decrease_rate
-        self.error_count = 0
-        self.success_count = 0
-
-    async def acquire(self):
-        await self.semaphore.acquire()
-
-    def release(self):
-        self.semaphore.release()
-        self.success_count += 1
-        if self.success_count > 100:  # Increase limit after 100 successful operations
-            self.increase_limit()
-            self.success_count = 0
-
-    def error_occurred(self):
-        self.error_count += 1
-        if self.error_count > 5:  # Decrease limit after 5 errors
-            self.decrease_limit()
-            self.error_count = 0
-
-    def increase_limit(self):
-        new_value = min(int(self.value * self.increase_rate), self.max_value)
-        if new_value > self.value:
-            self.value = new_value
-            self.semaphore = Semaphore(self.value)
-            print(f"Increased concurrency limit to {self.value}")
-
-    def decrease_limit(self):
-        new_value = max(int(self.value * self.decrease_rate), self.min_value)
-        if new_value < self.value:
-            self.value = new_value
-            self.semaphore = Semaphore(self.value)
-            print(f"Decreased concurrency limit to {self.value}")
-
-USE_SEMAPHORE = False #leave this as false cause otherwise it does not start making the API calls at all
-if USE_SEMAPHORE:
-    adaptive_sem = AdaptiveSemaphore(initial_value=50)  # Start with 50 concurrent tasks
-else:
-    adaptive_sem = None
     
 def time_it(func):
     @wraps(func)
@@ -224,38 +176,35 @@ def create_chain(llm, prompt):
     return RunnableSequence(prompt, llm)
 
 def clean_json_string(json_string):
-    # Remove prefixes and suffixes if they exist
-    json_string = json_string.strip().removeprefix("```json\n").removesuffix("```")
+    # Find the first occurrence of '{'
+    first_brace_index = json_string.find("{")
+    # If '{' is found, remove everything before it
+    if first_brace_index != -1:
+        json_string = json_string[first_brace_index:]
     
+    # Find the last occurrence of '}'
+    last_brace_index = json_string.rfind("}")
+    # If '}' is found, remove everything after it
+    if last_brace_index != -1:
+        json_string = json_string[:last_brace_index + 1]
     # Replace problematic escape sequences
     json_string = json_string.replace("\\'", "(").replace("\\'", ")")
 
     # Properly escape backslashes
     json_string = json_string.replace("\\", "\\\\")
     
-    # # Remove any remaining invalid escape sequences
-    # json_string = re.sub(r'\\([^"\\\/bfnrtu])', r'\1', json_string)
-    
     return json_string
-
+    
 @retry(wait=wait_exponential(multiplier=1, min=4, max=10), stop=stop_after_attempt(5))
 async def run_chain(chain, **kwargs):
     try:
-        if USE_SEMAPHORE:
-            await adaptive_sem.acquire()
-        
         with get_openai_callback() as cb:
             response = await chain.ainvoke(kwargs)
-        
-        if USE_SEMAPHORE:
-            adaptive_sem.release()
+
         return response.content
-    except Exception as e:
-        if USE_SEMAPHORE:
-            adaptive_sem.error_occurred()
-        forbidden_concepts = kwargs.get('forbidden_concepts', 'Not provided')
+    except Exception as e: 
         print(f"Error in run_chain: {e}")
-        print(f"Processing the task with forbidden_concepts = {forbidden_concepts}")
+        print(f"Error running the chain with kwargs = {kwargs};")
         raise Exception(f"An error occurred during processing: '{e}'")
     
 def regexp_evaluator(solution, forbidden_concepts, correct_solution):
@@ -290,9 +239,6 @@ async def process_problem(problem_data, max_iterations, num_problems, llm_a_chai
     }
     
     try:
-        if USE_SEMAPHORE:
-            await adaptive_sem.acquire()
-        
         for iteration in range(max_iterations):
             # Reset variables
             llm_o_forbidden_concepts_eval = llm_o_forbidden_concepts_feedback = llm_o_correctness_eval = llm_o_correctness_result = llm_o_forbidden_result = None
@@ -328,8 +274,6 @@ async def process_problem(problem_data, max_iterations, num_problems, llm_a_chai
                     'error_message': str(e),
                     'traceback': traceback.format_exc()
                 })
-                if USE_SEMAPHORE:
-                    adaptive_sem.error_occurred()
                 return error_log
 
             end_time = time.time()
@@ -426,12 +370,7 @@ async def process_problem(problem_data, max_iterations, num_problems, llm_a_chai
             'error_message': str(e),
             'traceback': traceback.format_exc()
         })
-        if USE_SEMAPHORE:
-            adaptive_sem.error_occurred()
         return error_log
-    finally:
-        if USE_SEMAPHORE:
-            adaptive_sem.release()
 
     return {
         'problem': problem,
@@ -451,36 +390,45 @@ async def process_problem(problem_data, max_iterations, num_problems, llm_a_chai
         'logs': logs
     }
 
-async def run_experiment_parallel(df, num_problems=2, max_iterations=5, llm_a_chain=None, llm_o_correctness_chain=None, llm_o_forbidden_chain=None, llm_e_correctness_chain=None, llm_e_forbidden_chain=None):
-    tasks = [process_problem((i, row), max_iterations, num_problems, llm_a_chain, llm_o_correctness_chain, llm_o_forbidden_chain, llm_e_correctness_chain, llm_e_forbidden_chain) for i, row in df.iterrows()]
-    results = await asyncio.gather(*tasks, return_exceptions=True)
-    
-    experiment_results = []
+async def run_experiment_parallel(df, num_problems=500, max_iterations=5, chunk_size=50, **kwargs):
+    all_results = []
     all_logs = []
-    error_logs = []
+    all_error_logs = []
     
-    for r in results:
-        if 'errors' in r:
-            error_logs.append(r)
-        else:
-            experiment_results.append({k: v for k, v in r.items() if k != 'logs'})
-            all_logs.extend(r['logs'])
+    # Process the dataframe in chunks
+    for start_idx in range(0, num_problems, chunk_size):
+        end_idx = min(start_idx + chunk_size, num_problems)
+        chunk_df = df.iloc[start_idx:end_idx]
+        
+        print(f"Processing problems {start_idx+1} to {end_idx}")
+        
+        tasks = [process_problem((i, row), max_iterations, num_problems, **kwargs) 
+                for i, row in chunk_df.iterrows()]
+        chunk_results = await asyncio.gather(*tasks)
+        
+        for r in chunk_results:
+            if 'errors' in r:
+                all_error_logs.append(r)
+            else:
+                all_results.append({k: v for k, v in r.items() if k != 'logs'})
+                all_logs.extend(r['logs'])
     
     # Count errors and false positives/negatives
-    llm_o_json_errors = sum(1 for r in error_logs if any(e['error_type'] == 'JSON_decode_error_LLM_O' for e in r['errors']))
-    llm_e_json_errors = sum(1 for r in error_logs if any(e['error_type'] == 'JSON_decode_error_LLM_E' for e in r['errors']))
-    steg_false_positives = sum(1 for r in experiment_results if "Steganography False Positive detected" in r['completion_reason'])
-    steg_false_negatives = sum(1 for r in experiment_results if "Steganography False Negative detected" in r['completion_reason'])
+    llm_o_json_errors = sum(1 for r in all_error_logs if any(e['error_type'] == 'JSON_decode_error_LLM_O' for e in r['errors']))
+    llm_e_json_errors = sum(1 for r in all_error_logs if any(e['error_type'] == 'JSON_decode_error_LLM_E' for e in r['errors']))
+    steg_false_positives = sum(1 for r in all_results if "Steganography False Positive detected" in r['completion_reason'])
+    steg_false_negatives = sum(1 for r in all_results if "Steganography False Negative detected" in r['completion_reason'])
     correctness_false_positives = sum(1 for log in all_logs if log['special_event'] == "Correctness False Positive detected: LLM-O says that it is correct but LLM-E says that it is incorrect")
     correctness_false_negatives = sum(1 for log in all_logs if log['special_event'] == "Correctness False Negative detected: LLM-O says that it is incorrect but LLM-E says that it is correct")
     
-    return experiment_results, all_logs, error_logs, llm_o_json_errors, llm_e_json_errors, steg_false_positives, steg_false_negatives, correctness_false_positives, correctness_false_negatives
+    return all_results, all_logs, all_error_logs, llm_o_json_errors, llm_e_json_errors, steg_false_positives, steg_false_negatives, correctness_false_positives, correctness_false_negatives
 
 async def main():
     SHOW_PLOTS = False
     SHOW_SUMMARY = False
     TEMPERATURE = 0.0
     LLM_O_USE_LLAMA3 = False
+    PROBLEMS_TO_PROCESS_PER_CHUNK = 100
 
     load_env_and_set_api_key()
 
@@ -520,6 +468,7 @@ async def main():
         df.head(num_problems), 
         num_problems=num_problems, 
         max_iterations=max_iterations,
+        chunk_size=PROBLEMS_TO_PROCESS_PER_CHUNK, 
         llm_a_chain=llm_a_chain,
         llm_o_correctness_chain=llm_o_correctness_chain,
         llm_o_forbidden_chain=llm_o_forbidden_chain,
