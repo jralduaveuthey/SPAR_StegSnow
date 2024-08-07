@@ -89,6 +89,12 @@ class AdaptiveSemaphore:
             self.semaphore = Semaphore(self.value)
             print(f"Decreased concurrency limit to {self.value}")
 
+USE_SEMAPHORE = False #leave this as false cause otherwise it does not start making the API calls at all
+if USE_SEMAPHORE:
+    adaptive_sem = AdaptiveSemaphore(initial_value=50)  # Start with 50 concurrent tasks
+else:
+    adaptive_sem = None
+    
 def time_it(func):
     @wraps(func)
     def wrapper(*args, **kwargs):
@@ -232,17 +238,26 @@ def clean_json_string(json_string):
     
     return json_string
 
+@retry(wait=wait_exponential(multiplier=1, min=4, max=10), stop=stop_after_attempt(5))
 async def run_chain(chain, **kwargs):
     try:
+        if USE_SEMAPHORE:
+            await adaptive_sem.acquire()
+        
         with get_openai_callback() as cb:
             response = await chain.ainvoke(kwargs)
-            # print(f"Total Tokens: {cb.total_tokens}")
-            # print(f"Total Cost (USD): ${cb.total_cost}")    
+        
+        if USE_SEMAPHORE:
+            adaptive_sem.release()
         return response.content
     except Exception as e:
+        if USE_SEMAPHORE:
+            adaptive_sem.error_occurred()
+        forbidden_concepts = kwargs.get('forbidden_concepts', 'Not provided')
         print(f"Error in run_chain: {e}")
-        return None
-
+        print(f"Processing the task with forbidden_concepts = {forbidden_concepts}")
+        raise Exception(f"An error occurred during processing: '{e}'")
+    
 def regexp_evaluator(solution, forbidden_concepts, correct_solution):
     found_forbidden_concepts, found_correct_solution = False, False
     # Check for forbidden concepts
@@ -259,7 +274,7 @@ def regexp_evaluator(solution, forbidden_concepts, correct_solution):
 
 
 @time_it
-async def process_problem(problem_data, max_iterations, num_problems, llm_a_chain, llm_o_correctness_chain, llm_o_forbidden_chain, llm_e_correctness_chain, llm_e_forbidden_chain, adaptive_sem):
+async def process_problem(problem_data, max_iterations, num_problems, llm_a_chain, llm_o_correctness_chain, llm_o_forbidden_chain, llm_e_correctness_chain, llm_e_forbidden_chain):
     i, row = problem_data
     problem = row['problem']
     forbidden_concepts = [str(row['intermediate_1']), str(row['intermediate_2'])]
@@ -275,7 +290,8 @@ async def process_problem(problem_data, max_iterations, num_problems, llm_a_chai
     }
     
     try:
-        await adaptive_sem.acquire()
+        if USE_SEMAPHORE:
+            await adaptive_sem.acquire()
         
         for iteration in range(max_iterations):
             # Reset variables
@@ -312,7 +328,8 @@ async def process_problem(problem_data, max_iterations, num_problems, llm_a_chai
                     'error_message': str(e),
                     'traceback': traceback.format_exc()
                 })
-                adaptive_sem.error_occurred()
+                if USE_SEMAPHORE:
+                    adaptive_sem.error_occurred()
                 return error_log
 
             end_time = time.time()
@@ -409,10 +426,12 @@ async def process_problem(problem_data, max_iterations, num_problems, llm_a_chai
             'error_message': str(e),
             'traceback': traceback.format_exc()
         })
-        adaptive_sem.error_occurred()
+        if USE_SEMAPHORE:
+            adaptive_sem.error_occurred()
         return error_log
     finally:
-        adaptive_sem.release()
+        if USE_SEMAPHORE:
+            adaptive_sem.release()
 
     return {
         'problem': problem,
@@ -432,9 +451,8 @@ async def process_problem(problem_data, max_iterations, num_problems, llm_a_chai
         'logs': logs
     }
 
-
-async def run_experiment_parallel(df, num_problems=2, max_iterations=5, llm_a_chain=None, llm_o_correctness_chain=None, llm_o_forbidden_chain=None, llm_e_correctness_chain=None, llm_e_forbidden_chain=None, adaptive_sem=None):
-    tasks = [process_problem((i, row), max_iterations, num_problems, llm_a_chain, llm_o_correctness_chain, llm_o_forbidden_chain, llm_e_correctness_chain, llm_e_forbidden_chain, adaptive_sem) for i, row in df.iterrows()]
+async def run_experiment_parallel(df, num_problems=2, max_iterations=5, llm_a_chain=None, llm_o_correctness_chain=None, llm_o_forbidden_chain=None, llm_e_correctness_chain=None, llm_e_forbidden_chain=None):
+    tasks = [process_problem((i, row), max_iterations, num_problems, llm_a_chain, llm_o_correctness_chain, llm_o_forbidden_chain, llm_e_correctness_chain, llm_e_forbidden_chain) for i, row in df.iterrows()]
     results = await asyncio.gather(*tasks, return_exceptions=True)
     
     experiment_results = []
@@ -462,11 +480,10 @@ async def main():
     SHOW_PLOTS = False
     SHOW_SUMMARY = False
     TEMPERATURE = 0.0
-    LLM_O_USE_LLAMA3 = True  # Set this variable to True or False as needed
+    LLM_O_USE_LLAMA3 = False
 
     load_env_and_set_api_key()
 
-    # Load the CSV file
     df = pd.read_csv(os.path.join(find_root_directory(), "datasets", "three_digit_nested_addition_problems.csv"))
 
     # Setup LLMs
@@ -499,8 +516,6 @@ async def main():
     max_iterations = 10
     print(f"Running experiment with {num_problems} problems, max {max_iterations} iterations each")
     
-    adaptive_sem = AdaptiveSemaphore(initial_value=50)  # Start with 50 concurrent tasks
-
     results, logs, error_logs, llm_o_json_errors, llm_e_json_errors, steg_false_positives, steg_false_negatives, correctness_false_positives, correctness_false_negatives = await run_experiment_parallel(
         df.head(num_problems), 
         num_problems=num_problems, 
@@ -510,7 +525,6 @@ async def main():
         llm_o_forbidden_chain=llm_o_forbidden_chain,
         llm_e_correctness_chain=llm_e_correctness_chain,
         llm_e_forbidden_chain=llm_e_forbidden_chain,
-        adaptive_sem=adaptive_sem
     )
 
     # Basic analysis and visualization
