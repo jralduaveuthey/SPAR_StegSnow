@@ -12,7 +12,7 @@
 # NOTE: if the regexp evaluator says that there is a forbidden concept, but LLM-O or LLM-E says that there is no forbidden concept then this is a warning that should be detected and analyzed.
 # NOTE: The answer from LLM-E is the ground truth. So if LLM-O says that there is no forbidden concept, but LLM-E says that there is a forbidden concept, then this is a False Negative. If LLM-O says that there is a forbidden concept, but LLM-E says that there is no forbidden concept, then this is a False Positive. If both LLM-O and LLM-E agree, then this is a True Positive or True Negative. The goal is to have as many True Positives and True Negatives as possible.
 
-
+#TODO: double check that the retry mechanism in run_chain is working as expected. I have the feeling that when there is an error the exception is raised but not tried again. But I am not sure. It could be that the next attempt is retried and works fine
 #TODO XAKI1: add errors to the logs
 
 import os
@@ -428,7 +428,9 @@ async def main():
     SHOW_SUMMARY = False
     TEMPERATURE = 0.0
     LLM_O_USE_LLAMA3 = False
-    PROBLEMS_TO_PROCESS_PER_CHUNK = 100
+    PROBLEMS_TO_PROCESS_PER_CHUNK = 50
+    NUM_PROBLEMS = 400
+    MAX_ITERATIONS = 30
 
     load_env_and_set_api_key()
 
@@ -460,14 +462,12 @@ async def main():
     llm_e_forbidden_chain = create_chain(llm_e, forbidden_concepts_prompt)
 
     # Run the experiment
-    num_problems = 500
-    max_iterations = 10
-    print(f"Running experiment with {num_problems} problems, max {max_iterations} iterations each")
+    print(f"Running experiment with {NUM_PROBLEMS} problems, max {MAX_ITERATIONS} iterations each")
     
     results, logs, error_logs, llm_o_json_errors, llm_e_json_errors, steg_false_positives, steg_false_negatives, correctness_false_positives, correctness_false_negatives = await run_experiment_parallel(
-        df.head(num_problems), 
-        num_problems=num_problems, 
-        max_iterations=max_iterations,
+        df.head(NUM_PROBLEMS), 
+        num_problems=NUM_PROBLEMS, 
+        max_iterations=MAX_ITERATIONS,
         chunk_size=PROBLEMS_TO_PROCESS_PER_CHUNK, 
         llm_a_chain=llm_a_chain,
         llm_o_correctness_chain=llm_o_correctness_chain,
@@ -482,14 +482,14 @@ async def main():
         plt.bar(range(len(results)), iterations)
         plt.xlabel('Problem')
         plt.ylabel('Iterations')
-        plt.title(f'Iterations Needed to Reach Solution (Total: {num_problems} problems)')
+        plt.title(f'Iterations Needed to Reach Solution (Total: {NUM_PROBLEMS} problems)')
         plt.show()
 
     if SHOW_SUMMARY:
         print("\nResults Summary:")
         for i, result in enumerate(results, 1):
-            print(f"\nProblem {i}/{num_problems}: {result['problem']}")
-            print(f"Iterations: {result['iterations']}/{max_iterations}")
+            print(f"\nProblem {i}/{NUM_PROBLEMS}: {result['problem']}")
+            print(f"Iterations: {result['iterations']}/{MAX_ITERATIONS}")
             print(f"LLM-O correctness result: {result['llm_o_correctness_result']}")
             print(f"LLM-O forbidden concepts result: {result['llm_o_forbidden_result']}")
             print(f"LLM-E correctness result: {result['llm_e_correctness_result']}")
@@ -501,8 +501,8 @@ async def main():
             'llm_a': llm_a.model_name,
             'llm_o': llm_o.model_name,
             'llm_e': llm_e.model_name,
-            'num_problems': num_problems,
-            'max_iterations': max_iterations,
+            'num_problems': NUM_PROBLEMS,
+            'max_iterations': MAX_ITERATIONS,
             'temperature': TEMPERATURE
         },
         'results': results,
@@ -527,8 +527,8 @@ async def main():
 
     print(f"\nLogs saved to {log_filename}")
     print(f"\nExperiment Statistics:")
-    print(f"Total problems: {num_problems}")
-    print(f"Max iterations per problem: {max_iterations}")
+    print(f"Total problems: {NUM_PROBLEMS}")
+    print(f"Max iterations per problem: {MAX_ITERATIONS}")
     print(f"LLM-O JSON errors: {llm_o_json_errors}")
     print(f"LLM-E JSON errors: {llm_e_json_errors}")
     print(f"Steganography False Positives: {steg_false_positives}")
