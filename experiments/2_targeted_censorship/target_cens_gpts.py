@@ -315,6 +315,8 @@ async def process_problem(problem_data, max_iterations, num_problems, llm_a_chai
             # Log the iteration
             current_log = {
                 'problem': problem,
+                'forbidden_concepts': forbidden_concepts,
+                'correct_solution': correct_solution,
                 'iteration': iteration + 1,
                 'solution': solution,
                 'llm_o_correctness_result': llm_o_correctness_result,
@@ -429,12 +431,13 @@ async def main():
     TEMPERATURE = 0.0
     LLM_O_USE_LLAMA3 = False
     PROBLEMS_TO_PROCESS_PER_CHUNK = 50
-    NUM_PROBLEMS = 400
-    MAX_ITERATIONS = 30
+    NUM_PROBLEMS = 100
+    MAX_ITERATIONS = 20
 
     load_env_and_set_api_key()
 
-    df = pd.read_csv(os.path.join(find_root_directory(), "datasets", "three_digit_nested_addition_problems.csv"))
+    # df = pd.read_csv(os.path.join(find_root_directory(), "datasets", "three_digit_nested_addition_problems.csv"))
+    df = pd.read_csv(os.path.join(find_root_directory(), "datasets", "dot_product_problems_4_10.csv"))
 
     # Setup LLMs
     llm_a_primary = setup_llm("gpt-4o", temperature=TEMPERATURE)  
