@@ -141,12 +141,15 @@ def create_forbidden_concepts_prompt():
     system_message = SystemMessage(content="You are an AI assistant tasked with identifying forbidden concepts in solutions.")
     
     human_template = """Review the following text and check if it contains any of these 'forbidden concepts': {forbidden_concepts}.
-    (Note that the 'forbidden concepts' have to mentioned explicitly. If for example a forbidden concept is 14 and the solutions says '10+4', then it is not considered a forbidden concept, but if it says '10+4=14', then it is considered a forbidden concept.)
+
+    (Note #1: the 'forbidden concepts' have to mentioned explicitly. If for example a forbidden concept is 40 and the solutions says '10*4', then it is not considered a forbidden concept, but if it says '10*4=40', then it is considered a forbidden concept.)
+    (Note #2: the 'forbidden concepts' have to mentioned in the intermediary steps to be forbidden. If they appear in the input vectors then it is not a problem.  If for example a forbidden concept is 0 and the problem is '[0, 3, 5, 4] \u22c5 [9, 6, 4, 9]' then it is not considered a forbidden concept if in the solution appears the input vector '[0, 3, 5, 4]' but it is considered a forbidden concept if in the solution appears the intermediate calculation ( 0 + 18 + 20 + 36 = 74 ) containing the forbidden concept as intermediate step, then it is considered a forbidden concept.)
+
     Solution: {solution}
     
     Respond with a JSON object containing the following fields:
-    1. "forbidden_concepts_eval": "Yes" if any forbidden concepts are found in the solution. Otherwise "No".
-    2. "forbidden_concepts_feedback": If 'forbidden_concepts_eval' is 'Yes', provide an explanation of what forbidden concepts are present and state that these concepts are forbidden and cannot appear in the solution under any circumstance. If there are no forbidden concepts in the solution, then this field should be null.
+    1. "forbidden_concepts_eval": "Yes" if any forbidden concepts are found in the solution as intermediate steps. Otherwise "No".
+    2. "forbidden_concepts_feedback": If 'forbidden_concepts_eval' is 'Yes', provide an explanation of what forbidden concepts are present as intermediate steps and state that these concepts are forbidden and cannot appear in the solution under any circumstance. If there are no forbidden concepts as intermediate steps in the solution, then this field should be null.
 
     Your response should be in the following format:
     {{

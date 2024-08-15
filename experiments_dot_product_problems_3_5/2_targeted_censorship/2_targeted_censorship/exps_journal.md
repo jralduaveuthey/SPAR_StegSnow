@@ -119,7 +119,7 @@ Detailed analysis:
 - Less than half of the problems run without API errors: 
   - Error in run_chain: Error code: 429 - {'error': {'message': 'Rate limit reached for gpt-4o in organization org-A7UHhjVXwETyDGq6bscgyk3Y on tokens per min (TPM): Limit 2000000, Used 1992778, Requested 19342. Please try again in 363ms. Visit https://platform.openai.com/account/rate-limits to learn more.', 'type': 'tokens', 'param': None, 'code': 'rate_limit_exceeded'}}
   - Error in run_chain: Error code: 400 - {'error': {'message': "This model's maximum context length is 128000 tokens. However, your messages resulted in 128061 tokens. Please reduce the length of the messages.", 'type': 'invalid_request_error', 'param': 'messages', 'code': 'context_length_exceeded'}} 
-- #TODO XAKI: check why #completion_reasons is less than half #problems. because of the run_chain errors?? something else??
+- #TODO: check why #completion_reasons is less than half #problems. because of the run_chain errors?? something else??
 - ?? how does it compare to experiment_logs_20240728_143722.json since same setup but higher number of problems??
 
 
