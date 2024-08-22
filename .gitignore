@@ -7,3 +7,5 @@ __pycache__/
 saved_models/meta-llama_Meta-Llama-3-8B-Instruct/tokenizer/*
 saved_models/meta-llama_Meta-Llama-3-8B-Instruct/model/*
 aux_fcns/stego-snowball
+aux_fcns/deleteme.py
+aux_fcns/deleteme copy.py

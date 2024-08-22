@@ -17,7 +17,7 @@ pandas = "*"
 matplotlib = "*"
 seaborn = "*"
 nbconvert = "*"
-langchain-openai = "*"
+langchain-openai = "==0.1.22"
 tenacity = "*"
 langchain-together = "*"
 

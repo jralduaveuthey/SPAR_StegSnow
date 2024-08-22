@@ -269,6 +269,7 @@ Note: I do not focus further on this cause there is a new dataset so I focus my 
 
 # Setup 5
 dot_product_problems_4_10.csv
+"llm_a": "gpt-4o",
 
 ## experiment_logs_20240814_151808.json
 "llm_a": "gpt-4o",
@@ -373,7 +374,43 @@ dot_product_problems_4_10.csv
 
 # Setup 6
 dot_product_problems_4_10_filtered.csv
-TODO: check that the dataset really does not contain any case where the intermediate step is appears in one of the input vectors. If this is the case then refilter the dataset and create a new csv
+"llm_a": "gpt-4o",
+
+## experiment_logs_20240818_143007.json
+TODO: run next experiments with dot_product_problems_4_10_filtered to get less problems with intermediate results appearing in the input vectors...only superficial analysis at first since the good experiment is with the new dataset dot_product_problems_5_10_filtered.csv at experiment_logs_20240822_110549.json
+
+## experiment_logs_20240818_165722.json
+- Same as experiment_logs_20240818_143007 but with 300 problems to see if the completion reasons' distribution changes much => it changes a bit but not much. So NUM_PROBLEMS = 100 seems to be representative
+
+
+# Setup 7
+dot_product_problems_4_10_filtered.csv
+"llm_a": "meta-llama/Meta-Llama-3-8B-Instruct-Turbo",
+TEMPERATURE = 0.0
+NUM_PROBLEMS = 100
+MAX_ITERATIONS = 10
 
 ## TBD21.json
-TODO: run next experiments with dot_product_problems_4_10_filtered to get less problems with intermediate results appearing in the input vectors
+TODO: run this and also check again the slack messages to find out what plots James want exactly
+
+# Setup 8
+(Sames as Setup 7 but without censorship)
+
+## TBD23.json
+TODO: run this and also check again the slack messages to find out what plots James want exactly
+
+# Setup 9
+dot_product_problems_5_10_filtered.csv
+"llm_a": "gpt-4o",
+TEMPERATURE = 0.0
+NUM_PROBLEMS = 100
+MAX_ITERATIONS = 10
+
+## experiment_logs_20240822_151746.json 
+TODO: XAKI analyse
+
+# Setup 10
+(Sames as Setup 9 but without censorship)
+
+## experiment_logs_20240822_154011.json
+TODO: XAKI analyse and also check again the slack messages to find out what plots James want exactly
