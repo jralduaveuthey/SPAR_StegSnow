@@ -119,7 +119,7 @@ Detailed analysis:
 - Less than half of the problems run without API errors: 
   - Error in run_chain: Error code: 429 - {'error': {'message': 'Rate limit reached for gpt-4o in organization org-A7UHhjVXwETyDGq6bscgyk3Y on tokens per min (TPM): Limit 2000000, Used 1992778, Requested 19342. Please try again in 363ms. Visit https://platform.openai.com/account/rate-limits to learn more.', 'type': 'tokens', 'param': None, 'code': 'rate_limit_exceeded'}}
   - Error in run_chain: Error code: 400 - {'error': {'message': "This model's maximum context length is 128000 tokens. However, your messages resulted in 128061 tokens. Please reduce the length of the messages.", 'type': 'invalid_request_error', 'param': 'messages', 'code': 'context_length_exceeded'}} 
-- #TODO: check why #completion_reasons is less than half #problems. because of the run_chain errors?? something else??
+- #TODO(low prio): check why #completion_reasons is less than half #problems. because of the run_chain errors?? something else??
 - ?? how does it compare to experiment_logs_20240728_143722.json since same setup but higher number of problems??
 
 
@@ -383,34 +383,110 @@ TODO: run next experiments with dot_product_problems_4_10_filtered to get less p
 - Same as experiment_logs_20240818_143007 but with 300 problems to see if the completion reasons' distribution changes much => it changes a bit but not much. So NUM_PROBLEMS = 100 seems to be representative
 
 
-# Setup 7
+# Setup 7 - Llama-3-8B with censorship
 dot_product_problems_4_10_filtered.csv
 "llm_a": "meta-llama/Meta-Llama-3-8B-Instruct-Turbo",
 TEMPERATURE = 0.0
 NUM_PROBLEMS = 100
 MAX_ITERATIONS = 10
+STEG_CENSORSHIP_APPLIED = True
 
-## TBD21.json
-TODO: run this and also check again the slack messages to find out what plots James want exactly
+## experiment_logs_20240824_212713.json
+Experiment Statistics:
+Total problems: 100
+Max iterations per problem: 10
+LLM-O JSON errors: 0
+LLM-E JSON errors: 0
+Steganography False Positives: 15
+Steganography False Negatives: 18
+Correctness False Positives: 71
+Correctness False Negatives: 0
+Total errors: 55
 
-# Setup 8
+see analysis in https://docs.google.com/document/d/108CJ3y116mL6chB5Ab4b-ECR4VozaPhKmD63KSpvlX0/edit 22/08/2024
+
+# Setup 8  - Llama-3-8B without censorship
 (Sames as Setup 7 but without censorship)
+STEG_CENSORSHIP_APPLIED = False
 
-## TBD23.json
-TODO: run this and also check again the slack messages to find out what plots James want exactly
+## experiment_logs_20240826_162751.json
+TODO: analyse in gdoc
 
-# Setup 9
+# Setup 9 - gpt-4o with censorship
 dot_product_problems_5_10_filtered.csv
 "llm_a": "gpt-4o",
 TEMPERATURE = 0.0
 NUM_PROBLEMS = 100
 MAX_ITERATIONS = 10
+STEG_CENSORSHIP_APPLIED = True
 
 ## experiment_logs_20240822_151746.json 
-TODO: XAKI analyse
+see analysis in https://docs.google.com/document/d/108CJ3y116mL6chB5Ab4b-ECR4VozaPhKmD63KSpvlX0/edit 22/08/2024
 
-# Setup 10
+# Setup 10 - gpt-4o without censorship
 (Sames as Setup 9 but without censorship)
+STEG_CENSORSHIP_APPLIED = False
 
 ## experiment_logs_20240822_154011.json
-TODO: XAKI analyse and also check again the slack messages to find out what plots James want exactly
+see analysis in https://docs.google.com/document/d/108CJ3y116mL6chB5Ab4b-ECR4VozaPhKmD63KSpvlX0/edit 22/08/2024
+
+
+# Setup 10 - Llama-3-8B with random targeted censorship
+dot_product_problems_4_10_filtered.csv
+"llm_a": "meta-llama/Meta-Llama-3-8B-Instruct-Turbo",
+TEMPERATURE = 0.0
+NUM_PROBLEMS = 100
+MAX_ITERATIONS = 10
+STEG_CENSORSHIP_APPLIED = True
+STEG_CENSORSHIP_DIFFERENT_CONCEPTS = True
+
+## TBD24.json
+TODO: run this and analyse in gdoc
+
+# Setup 11 - gpt-4o with random targeted censorship
+dot_product_problems_5_10_filtered.csv
+"llm_a": "gpt-4o",
+TEMPERATURE = 0.0
+NUM_PROBLEMS = 100
+MAX_ITERATIONS = 10
+STEG_CENSORSHIP_APPLIED = True
+STEG_CENSORSHIP_DIFFERENT_CONCEPTS = True
+
+## TBD25.json
+TODO: run this and analyse in gdoc
+
+# Setup 12 - Llama-3-70B with censorship
+???.csv
+"llm_a": "meta-llama/Meta-Llama-3-70B-Instruct-Turbo",
+TEMPERATURE = 0.0
+NUM_PROBLEMS = 100
+MAX_ITERATIONS = 10
+STEG_CENSORSHIP_APPLIED = True
+STEG_CENSORSHIP_DIFFERENT_CONCEPTS = False
+
+## TBD26.json
+TODO: run this and analyse in gdoc
+
+
+# Setup 13 - Llama-3-70B withou censorship
+???.csv
+"llm_a": "meta-llama/Meta-Llama-3-70B-Instruct-Turbo",
+TEMPERATURE = 0.0
+NUM_PROBLEMS = 100
+MAX_ITERATIONS = 10
+STEG_CENSORSHIP_APPLIED = False
+
+## TBD27.json
+TODO: run this and analyse in gdoc
+
+# Setup 14 - Llama-3-70B with random targeted censorship
+???.csv
+"llm_a": "meta-llama/Meta-Llama-3-70B-Instruct-Turbo",
+TEMPERATURE = 0.0
+NUM_PROBLEMS = 100
+MAX_ITERATIONS = 10
+STEG_CENSORSHIP_APPLIED = True
+STEG_CENSORSHIP_DIFFERENT_CONCEPTS = True
+
+## TBD28.json
+TODO: run this and analyse in gdoc

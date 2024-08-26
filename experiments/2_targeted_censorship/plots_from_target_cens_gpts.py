@@ -1,5 +1,5 @@
 
-#TODO: consider modifying the plot from plot_problem_difficulty()
+#TODO (low prio): consider modifying the plot from plot_problem_difficulty()
 
 import os
 import json
@@ -118,13 +118,26 @@ def plot_llm_agreement_forbidden(results, output_dir, setup):
     
     agreement = results.apply(categorize_agreement, axis=1)
     agreement_counts = agreement.value_counts()
+    total_cases = len(results)
     
     fig, ax = plt.subplots(figsize=(12, 6))
-    agreement_counts.plot(kind='bar', ax=ax)
+    bars = agreement_counts.plot(kind='bar', ax=ax)
     ax.set_title('LLM-O vs LLM-E vs RegExp Agreement on Presence of Forbidden Concepts')
     ax.set_xlabel('Agreement Category')
     ax.set_ylabel('Count')
     plt.xticks(rotation=45, ha='right')
+    
+    # Annotate bars with their heights and percentages
+    for bar in bars.patches:
+        height = bar.get_height()
+        percentage = (height / total_cases) * 100
+        ax.text(
+            bar.get_x() + bar.get_width() / 2, 
+            height, 
+            f'{height} ({percentage:.2f}%)', 
+            ha='center', 
+            va='bottom'
+        )
     
     add_setup_info(ax, setup)
     
@@ -145,13 +158,26 @@ def plot_llm_agreement_correctness(results, output_dir, setup):
     
     agreement = results.apply(categorize_agreement, axis=1)
     agreement_counts = agreement.value_counts()
+    total_counts = agreement_counts.sum()
     
     fig, ax = plt.subplots(figsize=(12, 6))
-    agreement_counts.plot(kind='bar', ax=ax)
+    bars = agreement_counts.plot(kind='bar', ax=ax)
     ax.set_title('LLM-O vs LLM-E vs RegExp Agreement on Solution Correctness')
     ax.set_xlabel('Agreement Category')
     ax.set_ylabel('Count')
     plt.xticks(rotation=45, ha='right')
+    
+    # Annotate bars with their heights and percentages
+    for bar in bars.patches:
+        height = bar.get_height()
+        percentage = (height / total_counts) * 100
+        ax.text(
+            bar.get_x() + bar.get_width() / 2, 
+            height, 
+            f'{height} ({percentage:.1f}%)', 
+            ha='center', 
+            va='bottom'
+        )
     
     add_setup_info(ax, setup)
     
@@ -377,6 +403,6 @@ if __name__ == "__main__":
     except Exception as e:
         print(f"An unexpected error occurred: {e}")
     
-    # json_file_path = r"C:\Users\jraldua-veuthey\Documents\Github\SPAR_StegSnow\experiments\2_targeted_censorship\experiment_logs_20240728_173648.json"
+    # json_file_path = r"C:\Users\jraldua-veuthey\Documents\Github\SPAR_StegSnow\experiments\2_targeted_censorship\experiment_logs_20240824_212713.json"
     
     main(json_file_path)
