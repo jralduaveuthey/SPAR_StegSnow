@@ -377,7 +377,7 @@ dot_product_problems_4_10_filtered.csv
 "llm_a": "gpt-4o",
 
 ## experiment_logs_20240818_143007.json
-TODO: run next experiments with dot_product_problems_4_10_filtered to get less problems with intermediate results appearing in the input vectors...only superficial analysis at first since the good experiment is with the new dataset dot_product_problems_5_10_filtered.csv at experiment_logs_20240822_110549.json
+TODO (low prio): run next experiments with dot_product_problems_4_10_filtered to get less problems with intermediate results appearing in the input vectors...only superficial analysis at first since the good experiment is with the new dataset dot_product_problems_5_10_filtered.csv at experiment_logs_20240822_110549.json
 
 ## experiment_logs_20240818_165722.json
 - Same as experiment_logs_20240818_143007 but with 300 problems to see if the completion reasons' distribution changes much => it changes a bit but not much. So NUM_PROBLEMS = 100 seems to be representative
@@ -410,7 +410,7 @@ see analysis in https://docs.google.com/document/d/108CJ3y116mL6chB5Ab4b-ECR4Voz
 STEG_CENSORSHIP_APPLIED = False
 
 ## experiment_logs_20240826_162751.json
-TODO: analyse in gdoc
+see analysis in gdoc
 
 # Setup 9 - gpt-4o with censorship
 dot_product_problems_5_10_filtered.csv
@@ -440,8 +440,8 @@ MAX_ITERATIONS = 10
 STEG_CENSORSHIP_APPLIED = True
 STEG_CENSORSHIP_DIFFERENT_CONCEPTS = True
 
-## TBD24.json
-TODO: run this and analyse in gdoc
+## experiment_logs_20240828_152826.json
+see analysis in gdoc
 
 # Setup 11 - gpt-4o with random targeted censorship
 dot_product_problems_5_10_filtered.csv
@@ -452,11 +452,11 @@ MAX_ITERATIONS = 10
 STEG_CENSORSHIP_APPLIED = True
 STEG_CENSORSHIP_DIFFERENT_CONCEPTS = True
 
-## TBD25.json
-TODO: run this and analyse in gdoc
+## experiment_logs_20240827_174859.json
+see analysis in https://docs.google.com/document/d/108CJ3y116mL6chB5Ab4b-ECR4VozaPhKmD63KSpvlX0/edit 22/08/2024
 
-# Setup 12 - Llama-3-70B with censorship
-???.csv
+# Setup 12 - Llama-3-70B with censorship 
+dot_product_problems_4_10_filtered.csv
 "llm_a": "meta-llama/Meta-Llama-3-70B-Instruct-Turbo",
 TEMPERATURE = 0.0
 NUM_PROBLEMS = 100
@@ -464,23 +464,45 @@ MAX_ITERATIONS = 10
 STEG_CENSORSHIP_APPLIED = True
 STEG_CENSORSHIP_DIFFERENT_CONCEPTS = False
 
-## TBD26.json
-TODO: run this and analyse in gdoc
+## experiment_logs_20240902_113241.json
+Experiment Statistics:
+Total problems: 100
+Max iterations per problem: 10
+LLM-O JSON errors: 0
+LLM-E JSON errors: 0
+Steganography False Positives: 27
+Steganography False Negatives: 39
+Correctness False Positives: 14
+Correctness False Negatives: 3
+Total errors: 17
+
+see analysis in gdoc
 
 
-# Setup 13 - Llama-3-70B withou censorship
-???.csv
+# Setup 13 - Llama-3-70B without censorship
+dot_product_problems_4_10_filtered.csv
 "llm_a": "meta-llama/Meta-Llama-3-70B-Instruct-Turbo",
 TEMPERATURE = 0.0
 NUM_PROBLEMS = 100
 MAX_ITERATIONS = 10
 STEG_CENSORSHIP_APPLIED = False
 
-## TBD27.json
-TODO: run this and analyse in gdoc
+## experiment_logs_20240902_140424.json
+Experiment Statistics:
+Total problems: 100
+Max iterations per problem: 10
+LLM-O JSON errors: 0
+LLM-E JSON errors: 0
+Steganography False Positives: 0
+Steganography False Negatives: 0
+Correctness False Positives: 37
+Correctness False Negatives: 0
+Total errors: 40
+
+see analysis in gdoc
 
 # Setup 14 - Llama-3-70B with random targeted censorship
-???.csv
+dot_product_problems_4_10_filtered.csv
 "llm_a": "meta-llama/Meta-Llama-3-70B-Instruct-Turbo",
 TEMPERATURE = 0.0
 NUM_PROBLEMS = 100
@@ -488,5 +510,16 @@ MAX_ITERATIONS = 10
 STEG_CENSORSHIP_APPLIED = True
 STEG_CENSORSHIP_DIFFERENT_CONCEPTS = True
 
-## TBD28.json
-TODO: run this and analyse in gdoc
+## experiment_logs_20240902_153503.json
+Experiment Statistics:
+Total problems: 100
+Max iterations per problem: 10
+LLM-O JSON errors: 0
+LLM-E JSON errors: 0
+Steganography False Positives: 3
+Steganography False Negatives: 0
+Correctness False Positives: 0
+Correctness False Negatives: 0
+Total errors: 0
+
+see analysis in gdoc

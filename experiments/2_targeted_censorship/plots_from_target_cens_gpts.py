@@ -24,10 +24,15 @@ def extract_data(json_data):
     results = pd.DataFrame(json_data['results'])
     results['iterations'] = results['iterations'].astype(int)
     
-    # Extract regexp_result from logs
-    logs = pd.DataFrame(json_data['logs'])
-    last_logs = logs.groupby('problem').last().reset_index()
-    results = results.merge(last_logs[['problem', 'regexp_result']], on='problem', how='left')
+    # Check if logs field is empty
+    if json_data['logs']:
+        # Extract regexp_result from logs
+        logs = pd.DataFrame(json_data['logs'])
+        last_logs = logs.groupby('problem').last().reset_index()
+        results = results.merge(last_logs[['problem', 'regexp_result']], on='problem', how='left')
+    else:
+        # If logs are empty, add a column with NaN values
+        results['regexp_result'] = pd.NA
     
     stats = pd.DataFrame([json_data['statistics']])
     return results, stats
@@ -403,6 +408,6 @@ if __name__ == "__main__":
     except Exception as e:
         print(f"An unexpected error occurred: {e}")
     
-    # json_file_path = r"C:\Users\jraldua-veuthey\Documents\Github\SPAR_StegSnow\experiments\2_targeted_censorship\experiment_logs_20240824_212713.json"
+    json_file_path = r"C:\Users\jraldua-veuthey\Documents\Github\SPAR_StegSnow\experiments\2_targeted_censorship\experiment_logs_20240902_153503.json"
     
     main(json_file_path)
